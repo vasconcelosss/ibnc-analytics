@@ -173,6 +173,125 @@ tr:hover td{background:var(--n7)}
 .tab-btn{padding:6px 14px;border-radius:8px;border:none;background:none;font-size:12px;font-family:var(--font);cursor:pointer;color:var(--n4);font-weight:500}
 .tab-btn.active{background:#fff;color:var(--n2);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ═══════════════════════════════════════
+   MOBILE RESPONSIVE
+   ═══════════════════════════════════════ */
+
+/* Hamburger button */
+#hamburger{
+  display:none;align-items:center;justify-content:center;
+  width:38px;height:38px;border:none;background:var(--n7);
+  border-radius:8px;cursor:pointer;flex-shrink:0;
+}
+#hamburger i{font-size:18px;color:var(--n2)}
+
+/* Mobile overlay */
+#sidebar-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;
+}
+
+/* Bottom nav for mobile */
+#bottom-nav{display:none}
+
+@media (max-width: 768px){
+  :root{ --sidebar-w:0px }
+
+  /* Sidebar becomes a drawer */
+  #sidebar{
+    transform:translateX(-100%);transition:transform .25s ease;
+    width:240px;z-index:100;
+  }
+  #sidebar.open{transform:translateX(0)}
+  #sidebar-overlay.open{display:block}
+
+  /* Main takes full width */
+  #main{margin-left:0}
+
+  /* Topbar mobile */
+  #topbar{padding:0 14px;height:52px;gap:8px}
+  #hamburger{display:flex}
+  .topbar-left .page-sub{display:none}
+  .topbar-left .page-title{font-size:14px}
+  .badge-date{display:none}
+  .btn-sync span{display:none}
+  .btn-sync{padding:8px 10px}
+  #sync-label{font-size:10px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* Content padding */
+  #content{padding:14px}
+
+  /* Filters stack vertically */
+  .filter-row{flex-direction:column;gap:10px}
+  .filter-group select{min-width:unset;width:100%}
+  .filter-group{width:100%}
+  .btn-clear{width:100%;justify-content:center}
+
+  /* KPIs: 2 columns on mobile */
+  .kpi-row{
+    grid-template-columns:1fr 1fr !important;
+    gap:10px;
+  }
+  .kpi-card:first-child{grid-column:1/-1} /* highlight card full width */
+  .kpi-value{font-size:16px}
+  .kpi-card{padding:14px}
+
+  /* Charts stack vertically */
+  .charts-row{grid-template-columns:1fr;gap:12px}
+  .grid-2{grid-template-columns:1fr;gap:12px}
+  .grid-3{grid-template-columns:1fr;gap:12px}
+
+  /* Tables scroll horizontally */
+  .table-card{overflow-x:auto;padding:14px}
+  table{min-width:400px}
+
+  /* Chart cards */
+  .chart-card{padding:14px}
+
+  /* Filter bar */
+  .filter-bar{padding:12px 14px}
+
+  /* Modal full screen on mobile */
+  .modal-overlay{align-items:flex-end}
+  .modal{
+    width:100%;border-radius:16px 16px 0 0;
+    max-height:90vh;overflow-y:auto;
+    padding:20px;
+  }
+
+  /* Section titles */
+  .section-title{font-size:14px}
+
+  /* Bottom nav bar */
+  #bottom-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    background:#fff;border-top:1px solid var(--n6);
+    padding:8px 0 max(8px, env(safe-area-inset-bottom));
+    z-index:90;box-shadow:0 -2px 10px rgba(0,0,0,.06);
+  }
+  .bn-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+    border:none;background:none;cursor:pointer;padding:4px;
+    font-size:9px;font-family:var(--font);color:var(--n4);font-weight:600;
+    text-transform:uppercase;letter-spacing:.3px;
+  }
+  .bn-item i{font-size:20px}
+  .bn-item.active{color:var(--g1)}
+  .bn-item.active i{color:var(--g1)}
+
+  /* Add bottom padding for bottom nav */
+  #content{padding-bottom:80px}
+
+  /* Topbar right compact */
+  .topbar-right{gap:6px}
+  .badge-sync{padding:4px 8px;font-size:10px}
+}
+
+@media (max-width: 380px){
+  .kpi-row{grid-template-columns:1fr !important}
+  .kpi-card:first-child{grid-column:unset}
+  #content{padding:10px}
+}
 </style>
 </head>
 <body>
@@ -246,8 +365,10 @@ tr:hover td{background:var(--n7)}
 
 <!-- MAIN -->
 <div id="main">
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
   <div id="topbar">
-    <div class="topbar-left">
+    <div class="topbar-left" style="display:flex;align-items:center;gap:10px">
+      <button id="hamburger" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
       <div class="page-title" id="page-title">Dashboard Geral</div>
       <div class="page-sub">Visão consolidada · Igreja Boas Novas (IBNC)</div>
     </div>
@@ -834,5 +955,14 @@ async function init(){
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
+
+<!-- BOTTOM NAV (mobile only) -->
+<div id="bottom-nav">
+  <button class="bn-item active" onclick="navMobile('dashboard',this)"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
+  <button class="bn-item" onclick="navMobile('tendencias',this)"><i class="ti ti-trending-up"></i>Tendências</button>
+  <button class="bn-item" onclick="navMobile('filiais',this)"><i class="ti ti-building-church"></i>Filiais</button>
+  <button class="bn-item" onclick="navMobile('pastores',this)"><i class="ti ti-user-circle"></i>Pastores</button>
+  <button class="bn-item" onclick="navMobile('rankings',this)"><i class="ti ti-trophy"></i>Rankings</button>
+</div>
 </body>
 </html>
