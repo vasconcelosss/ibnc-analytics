@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IBNC Analytics — Campos Consultoria</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --g1:#19332B;--g2:#1C2B26;--g3:#2E7D5B;--g4:#86EFAC;
+  --n2:#1a1a1a;--n3:#4C4C4C;--n4:#7C7C7C;--n6:#e5e5e5;--n7:#f5f5f5;
+  --white:#fff;--off:#F1F1F1;
+  --sidebar-w:230px;
+  --font:'Mona Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--off);color:var(--n2);font-size:13px}
+/* SIDEBAR */
+#sidebar{
+  position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);
+  background:var(--g1);color:#fff;display:flex;flex-direction:column;z-index:100;
+}
+.sb-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-logo .brand{font-size:15px;font-weight:800;letter-spacing:-.3px}
+.sb-logo .sub{font-size:10px;color:rgba(255,255,255,.5);margin-top:1px}
+.sb-client{padding:12px 16px;background:rgba(255,255,255,.05);margin:12px;border-radius:8px}
+.sb-client .lbl{font-size:9px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px}
+.sb-client .name{font-size:12px;font-weight:700;margin-top:2px}
+.sb-section{padding:10px 16px 4px;font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.8px}
+.sb-item{
+  display:flex;align-items:center;gap:10px;padding:9px 16px;
+  color:rgba(255,255,255,.7);cursor:pointer;border-radius:0;transition:all .15s;
+  border:none;background:none;width:100%;text-align:left;font-family:var(--font);font-size:12px;
+}
+.sb-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-item.active{background:rgba(255,255,255,.12);color:#fff;font-weight:600}
+.sb-item .live-badge{
+  margin-left:auto;background:#22c55e;color:#fff;font-size:9px;
+  padding:1px 6px;border-radius:10px;font-weight:700;
+}
+.sb-gs{margin:auto 0 0;padding:12px;border-top:1px solid rgba(255,255,255,.08)}
+.sb-gs-card{
+  background:rgba(255,255,255,.07);border-radius:8px;padding:10px 12px;cursor:pointer;
+}
+.sb-gs-card:hover{background:rgba(255,255,255,.12)}
+.gs-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.gs-icon-wrap{width:24px;height:24px;background:rgba(255,255,255,.1);border-radius:5px;display:flex;align-items:center;justify-content:center}
+.gs-label{font-size:11px;font-weight:700;color:#fff}
+.gs-status-row{display:flex;align-items:center;gap:5px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;flex-shrink:0}
+.live-dot.warn{background:#facc15}
+.live-dot.err{background:#f87171}
+#gs-status-text{font-size:10px;color:rgba(255,255,255,.6)}
+/* MAIN */
+#app{display:flex;height:100vh;overflow:hidden}
+#main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;overflow:hidden}
+/* TOPBAR */
+#topbar{
+  background:#fff;border-bottom:1px solid var(--n6);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:56px;flex-shrink:0;
+}
+.topbar-left .page-title{font-size:16px;font-weight:800;color:var(--n2)}
+.topbar-left .page-sub{font-size:11px;color:var(--n4);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.badge-sync{
+  display:flex;align-items:center;gap:6px;background:#f0fdf4;
+  border:1px solid #bbf7d0;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;color:#16a34a;
+}
+.badge-sync .dot{width:6px;height:6px;border-radius:50%;background:#22c55e}
+.badge-date{
+  display:flex;align-items:center;gap:6px;background:var(--n7);
+  border:1px solid var(--n6);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--n3);
+}
+.btn-sync{
+  display:flex;align-items:center;gap:6px;background:var(--n2);color:#fff;
+  border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;
+  cursor:pointer;font-family:var(--font);transition:background .15s;
+}
+.btn-sync:hover{background:#333}
+/* CONTENT */
+#content{flex:1;overflow-y:auto;padding:24px}
+/* FILTERS */
+.filter-bar{
+  background:#fff;border:1px solid var(--n6);border-radius:12px;
+  padding:16px 20px;margin-bottom:20px;
+}
+.filter-row{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.filter-group{display:flex;flex-direction:column;gap:4px}
+.filter-group label{font-size:10px;font-weight:700;color:var(--n4);text-transform:uppercase;letter-spacing:.5px}
+.filter-group select{
+  border:1px solid var(--n6);border-radius:7px;padding:7px 10px;
+  font-size:12px;font-family:var(--font);color:var(--n2);background:#fff;cursor:pointer;min-width:140px;
+}
+.btn-clear{
+  display:flex;align-items:center;gap:5px;background:none;border:1px solid var(--n6);
+  border-radius:7px;padding:7px 12px;font-size:12px;color:var(--n3);cursor:pointer;
+  font-family:var(--font);margin-top:auto;
+}
+.btn-clear:hover{background:var(--n7)}
+.filter-meta{text-align:right;font-size:11px;color:var(--n4);margin-top:8px}
+.filter-meta strong{color:var(--n2);font-weight:700}
+/* KPIs */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
+.kpi-card{background:#fff;border:1px solid var(--n6);border-radius:12px;padding:18px}
+.kpi-card.highlight{background:var(--g1);border-color:var(--g1)}
+.kpi-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--n4);margin-bottom:8px}
+.kpi-card.highlight .kpi-label{color:rgba(255,255,255,.6)}
+.kpi-value{font-size:18px;font-weight:800;color:var(--n2);line-height:1.2}
+.kpi-card.highlight .kpi-value{color:#fff}
+.kpi-sub{font-size:11px;color:var(--n4);margin-top:4px}
+.kpi-card.highlight .kpi-sub{color:rgba(255,255,255,.5)}
+.kpi-delta{font-size:11px;font-weight:600;margin-top:4px}
+.kpi-delta.pos{color:#16a34a}.kpi-delta.neg{color:#dc2626}.kpi-delta.neu{color:var(--n4)}
+/* CHARTS */
+.charts-row{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:20px}
+.chart-card{background:#fff;border:1px solid var(--n6);border-radius:12px;padding:20px}
+.chart-title{font-size:13px;font-weight:700;color:var(--n2)}
+.chart-sub{font-size:11px;color:var(--n4);margin-top:2px;margin-bottom:16px}
+.chart-badge{float:right;font-size:10px;font-weight:600;color:#16a34a;background:#f0fdf4;padding:2px 8px;border-radius:10px}
+canvas{max-width:100%}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--n3)}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* TABLES */
+.table-card{background:#fff;border:1px solid var(--n6);border-radius:12px;padding:20px;margin-bottom:16px}
+table{width:100%;border-collapse:collapse}
+th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--n4);padding:8px 10px;border-bottom:2px solid var(--n6);text-align:left}
+td{padding:9px 10px;border-bottom:1px solid var(--n7);font-size:12px;color:var(--n2)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--n7)}
+.rank{font-weight:800;color:var(--n4);width:28px}
+.bar-cell{width:160px}
+.mini-bar{height:6px;border-radius:3px;background:var(--g3)}
+/* MODAL */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.5);
+  display:none;align-items:center;justify-content:center;z-index:999;
+}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:28px;width:480px;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--n4);margin-bottom:20px}
+.modal-field{margin-bottom:14px}
+.modal-field label{display:block;font-size:11px;font-weight:700;color:var(--n3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+.modal-field input{width:100%;border:1px solid var(--n6);border-radius:8px;padding:10px 12px;font-size:12px;font-family:var(--font)}
+.hint{font-size:10px;color:var(--n4);margin-top:4px;display:block}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.btn-cancel{background:var(--n7);border:none;border-radius:8px;padding:9px 18px;font-size:13px;cursor:pointer;font-family:var(--font)}
+.btn-cancel:hover{background:var(--n6)}
+.btn-connect{background:var(--g1);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;cursor:pointer;font-family:var(--font);font-weight:600}
+.btn-connect:hover{background:var(--g3)}
+.log-panel{
+  background:#0f1117;border-radius:8px;padding:10px 12px;max-height:180px;
+  overflow-y:auto;font-size:11px;font-family:monospace;line-height:1.7;
+}
+.log-panel .ok{color:#4ade80}.log-panel .warn{color:#facc15}.log-panel .err{color:#f87171}
+.log-panel .ts{color:#6b7280;margin-right:6px}
+/* PAGES */
+.page{display:none}.page.active{display:block}
+.section-title{font-size:16px;font-weight:800;margin-bottom:4px}
+.section-sub{font-size:12px;color:var(--n4);margin-bottom:20px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--n7)}
+.stat-row:last-child{border:none}
+.stat-label{font-size:12px;color:var(--n3)}
+.stat-val{font-size:12px;font-weight:700;color:var(--n2)}
+.pct-bar{height:4px;background:var(--n6);border-radius:2px;margin-top:4px}
+.pct-fill{height:4px;background:var(--g3);border-radius:2px}
+.tab-bar{display:flex;gap:4px;background:var(--n7);border-radius:10px;padding:3px;margin-bottom:16px;width:fit-content}
+.tab-btn{padding:6px 14px;border-radius:8px;border:none;background:none;font-size:12px;font-family:var(--font);cursor:pointer;color:var(--n4);font-weight:500}
+.tab-btn.active{background:#fff;color:var(--n2);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ═══════════════════════════════════════
+   MOBILE RESPONSIVE
+   ═══════════════════════════════════════ */
+
+/* Hamburger button */
+#hamburger{
+  display:none;align-items:center;justify-content:center;
+  width:38px;height:38px;border:none;background:var(--n7);
+  border-radius:8px;cursor:pointer;flex-shrink:0;
+}
+#hamburger i{font-size:18px;color:var(--n2)}
+
+/* Mobile overlay */
+#sidebar-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;
+}
+
+/* Bottom nav for mobile */
+#bottom-nav{display:none}
+
+@media (max-width: 768px){
+  :root{ --sidebar-w:0px }
+
+  /* Sidebar becomes a drawer */
+  #sidebar{
+    transform:translateX(-100%);transition:transform .25s ease;
+    width:240px;z-index:100;
+  }
+  #sidebar.open{transform:translateX(0)}
+  #sidebar-overlay.open{display:block}
+
+  /* Main takes full width */
+  #main{margin-left:0}
+
+  /* Topbar mobile */
+  #topbar{padding:0 14px;height:52px;gap:8px}
+  #hamburger{display:flex}
+  .topbar-left .page-sub{display:none}
+  .topbar-left .page-title{font-size:14px}
+  .badge-date{display:none}
+  .btn-sync span{display:none}
+  .btn-sync{padding:8px 10px}
+  #sync-label{font-size:10px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* Content padding */
+  #content{padding:14px}
+
+  /* Filters stack vertically */
+  .filter-row{flex-direction:column;gap:10px}
+  .filter-group select{min-width:unset;width:100%}
+  .filter-group{width:100%}
+  .btn-clear{width:100%;justify-content:center}
+
+  /* KPIs: 2 columns on mobile */
+  .kpi-row{
+    grid-template-columns:1fr 1fr !important;
+    gap:10px;
+  }
+  .kpi-card:first-child{grid-column:1/-1} /* highlight card full width */
+  .kpi-value{font-size:16px}
+  .kpi-card{padding:14px}
+
+  /* Charts stack vertically */
+  .charts-row{grid-template-columns:1fr;gap:12px}
+  .grid-2{grid-template-columns:1fr;gap:12px}
+  .grid-3{grid-template-columns:1fr;gap:12px}
+
+  /* Tables scroll horizontally */
+  .table-card{overflow-x:auto;padding:14px}
+  table{min-width:400px}
+
+  /* Chart cards */
+  .chart-card{padding:14px}
+
+  /* Filter bar */
+  .filter-bar{padding:12px 14px}
+
+  /* Modal full screen on mobile */
+  .modal-overlay{align-items:flex-end}
+  .modal{
+    width:100%;border-radius:16px 16px 0 0;
+    max-height:90vh;overflow-y:auto;
+    padding:20px;
+  }
+
+  /* Section titles */
+  .section-title{font-size:14px}
+
+  /* Bottom nav bar */
+  #bottom-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    background:#fff;border-top:1px solid var(--n6);
+    padding:8px 0 max(8px, env(safe-area-inset-bottom));
+    z-index:90;box-shadow:0 -2px 10px rgba(0,0,0,.06);
+  }
+  .bn-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+    border:none;background:none;cursor:pointer;padding:4px;
+    font-size:9px;font-family:var(--font);color:var(--n4);font-weight:600;
+    text-transform:uppercase;letter-spacing:.3px;
+  }
+  .bn-item i{font-size:20px}
+  .bn-item.active{color:var(--g1)}
+  .bn-item.active i{color:var(--g1)}
+
+  /* Add bottom padding for bottom nav */
+  #content{padding-bottom:80px}
+
+  /* Topbar right compact */
+  .topbar-right{gap:6px}
+  .badge-sync{padding:4px 8px;font-size:10px}
+}
+
+@media (max-width: 380px){
+  .kpi-row{grid-template-columns:1fr !important}
+  .kpi-card:first-child{grid-column:unset}
+  #content{padding:10px}
+}
+
+/* PERIOD PICKER */
+.period-option{
+  padding:10px 16px;font-size:12px;cursor:pointer;color:var(--n2);
+  transition:background .1s;border-left:3px solid transparent;
+}
+.period-option:hover{background:var(--n7)}
+.period-option.active{
+  background:#f0fdf4;color:var(--g1);font-weight:700;
+  border-left-color:var(--g1);
+}
+.period-divider{height:1px;background:var(--n6);margin:4px 0}
+
+/* ── MULTI-SELECT FILIAL ── */
+.multiselect-wrap{position:relative}
+.multiselect-btn{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  border:1px solid var(--n6);border-radius:7px;padding:7px 10px;
+  font-size:12px;font-family:var(--font);color:var(--n2);background:#fff;
+  cursor:pointer;min-width:160px;width:100%;text-align:left;
+}
+.multiselect-btn:hover{border-color:var(--g3)}
+.multiselect-btn.active-filter{border-color:var(--g3);background:#f0fdf4;color:var(--g1);font-weight:600}
+.multiselect-dropdown{
+  display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:300;
+  background:#fff;border:1px solid var(--n6);border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:200px;max-height:260px;
+  overflow-y:auto;
+}
+.multiselect-dropdown.open{display:block}
+.ms-search{
+  padding:8px 10px;border-bottom:1px solid var(--n6);
+}
+.ms-search input{
+  width:100%;border:1px solid var(--n6);border-radius:6px;padding:5px 8px;
+  font-size:11px;font-family:var(--font);outline:none;
+}
+.ms-search input:focus{border-color:var(--g3)}
+.ms-option{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  font-size:12px;cursor:pointer;transition:background .1s;
+}
+.ms-option:hover{background:var(--n7)}
+.ms-option input[type=checkbox]{
+  width:14px;height:14px;accent-color:var(--g1);cursor:pointer;flex-shrink:0;
+}
+.ms-option.select-all{
+  border-bottom:1px solid var(--n6);font-weight:700;color:var(--g1);font-size:11px;
+}
+.ms-tag-wrap{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;min-height:0}
+.ms-tag{
+  display:flex;align-items:center;gap:4px;background:#f0fdf4;
+  border:1px solid #bbf7d0;border-radius:20px;padding:2px 8px;
+  font-size:11px;color:var(--g1);font-weight:600;
+}
+.ms-tag button{background:none;border:none;cursor:pointer;color:var(--g3);font-size:12px;padding:0;line-height:1}
+
+/* ── CALENDAR DATE RANGE ── */
+.daterange-wrap{position:relative}
+.daterange-btn{
+  display:flex;align-items:center;gap:6px;
+  border:1px solid var(--n6);border-radius:7px;padding:7px 10px;
+  font-size:12px;font-family:var(--font);color:var(--n2);background:#fff;
+  cursor:pointer;min-width:180px;width:100%;
+}
+.daterange-btn.active-filter{border-color:var(--g3);background:#f0fdf4;color:var(--g1);font-weight:600}
+.daterange-picker{
+  display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:300;
+  background:#fff;border:1px solid var(--n6);border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.12);padding:16px;min-width:300px;
+}
+.daterange-picker.open{display:block}
+.quick-periods{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.qp-btn{
+  padding:5px 10px;border-radius:20px;border:1px solid var(--n6);
+  font-size:11px;font-family:var(--font);cursor:pointer;background:#fff;color:var(--n3);
+  transition:all .15s;
+}
+.qp-btn:hover{border-color:var(--g3);color:var(--g1)}
+.qp-btn.active{background:var(--g1);color:#fff;border-color:var(--g1)}
+.date-inputs{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.date-inputs label{font-size:10px;font-weight:700;color:var(--n4);text-transform:uppercase}
+.date-inputs input[type=date]{
+  border:1px solid var(--n6);border-radius:6px;padding:6px 8px;
+  font-size:12px;font-family:var(--font);color:var(--n2);background:#fff;
+  cursor:pointer;flex:1;
+}
+.date-inputs input[type=date]:focus{outline:none;border-color:var(--g3)}
+.daterange-actions{display:flex;justify-content:flex-end;gap:8px;border-top:1px solid var(--n6);padding-top:10px}
+.dr-apply{background:var(--g1);color:#fff;border:none;border-radius:7px;padding:6px 14px;font-size:12px;font-family:var(--font);cursor:pointer;font-weight:600}
+.dr-apply:hover{background:var(--g3)}
+.dr-clear{background:none;border:1px solid var(--n6);border-radius:7px;padding:6px 14px;font-size:12px;font-family:var(--font);cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-ds">
+  <div class="modal">
+    <div class="modal-title">Sincronizar Google Sheets</div>
+    <div class="modal-sub">Conexão automática via Apps Script</div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-bottom:16px">
+      <div style="font-size:11px;color:#166534;font-weight:600;margin-bottom:8px">Código Apps Script (Extensões → Apps Script):</div>
+      <div style="background:#0f1117;border-radius:6px;padding:10px;font-size:11px;color:#86efac;font-family:monospace;line-height:1.7">
+        function doGet(){<br>
+        &nbsp;&nbsp;var ss=SpreadsheetApp.getActiveSpreadsheet();<br>
+        &nbsp;&nbsp;var sh=ss.getSheetByName("Arrecadação");<br>
+        &nbsp;&nbsp;var data=sh.getDataRange().getValues();<br>
+        &nbsp;&nbsp;return ContentService.createTextOutput(JSON.stringify(data))<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;.setMimeType(ContentService.MimeType.JSON);<br>
+        }
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>URL do Apps Script</label>
+      <input type="text" id="inp-script-url" value="https://script.google.com/macros/s/AKfycbxJalm8OC3BGbzU-on8ENEjO9lbqFLv24pc-7ENB80LH36slm1xT-QZB-fghppf4X9pjQ/exec">
+      <span class="hint">Termina em /exec · Acesso: Qualquer pessoa</span>
+    </div>
+    <div id="modal-log" class="log-panel" style="display:none"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="document.getElementById('modal-ds').classList.remove('open')">Fechar</button>
+      <button class="btn-connect" id="btn-sync" onclick="manualSync()">⟳ Sincronizar</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sb-logo">
+    <div class="brand">IBNC Analytics</div>
+    <div class="sub">Campos Consultoria</div>
+  </div>
+  <div class="sb-client">
+    <div class="lbl">Cliente ativo</div>
+    <div class="name">Igreja Boas Novas — IBNC</div>
+  </div>
+  <div class="sb-section">Visão Geral</div>
+  <button class="sb-item active" onclick="nav('dashboard',this)"><i class="ti ti-layout-dashboard"></i>Dashboard<span class="live-badge" id="live-badge">Live</span></button>
+  <button class="sb-item" onclick="nav('tendencias',this)"><i class="ti ti-trending-up"></i>Tendências</button>
+  <div class="sb-section">Análises</div>
+  <button class="sb-item" onclick="nav('filiais',this)"><i class="ti ti-building-church"></i>Filiais</button>
+  <button class="sb-item" onclick="nav('pastores',this)"><i class="ti ti-user-circle"></i>Pastores</button>
+  <button class="sb-item" onclick="nav('cultos',this)"><i class="ti ti-calendar-event"></i>Cultos</button>
+  <button class="sb-item" onclick="nav('pagamentos',this)"><i class="ti ti-credit-card"></i>Pagamentos</button>
+  <div class="sb-section">Relatórios</div>
+  <button class="sb-item" onclick="nav('rankings',this)"><i class="ti ti-trophy"></i>Rankings</button>
+  <div class="sb-gs">
+    <div class="sb-gs-card" onclick="document.getElementById('modal-ds').classList.add('open')">
+      <div class="gs-top">
+        <div class="gs-icon-wrap"><i class="ti ti-table" style="font-size:13px;color:#86efac"></i></div>
+        <div class="gs-label">Google Sheets</div>
+      </div>
+      <div class="gs-status-row">
+        <div class="live-dot warn" id="gs-dot"></div>
+        <span id="gs-status-text">Conectando...</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <div id="topbar">
+    <div class="topbar-left" style="display:flex;align-items:center;gap:10px">
+      <button id="hamburger" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
+      <div class="page-title" id="page-title">Dashboard Geral</div>
+      <div class="page-sub">Visão consolidada · Igreja Boas Novas (IBNC)</div>
+    </div>
+    <div class="topbar-right">
+      <div class="badge-sync"><div class="dot"></div><span id="sync-label">Carregando...</span></div>
+      <div class="badge-date"><i class="ti ti-calendar"></i><span id="date-range">—</span></div>
+      <button class="btn-sync" onclick="manualSync()"><i class="ti ti-refresh"></i>Sincronizar</button>
+    </div>
+  </div>
+
+  <div id="content">
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="filter-row">
+
+        <!-- MULTI-SELECT FILIAL -->
+        <div class="filter-group">
+          <label>Filial</label>
+          <div class="multiselect-wrap" id="ms-filial-wrap">
+            <button class="multiselect-btn" id="ms-filial-btn" onclick="toggleMS('filial')">
+              <span id="ms-filial-label">Todas as Filiais</span>
+              <i class="ti ti-chevron-down" style="font-size:11px;color:var(--n4);flex-shrink:0"></i>
+            </button>
+            <div class="multiselect-dropdown" id="ms-filial-drop">
+              <div class="ms-search"><input type="text" placeholder="Buscar filial..." oninput="filterMS('filial',this.value)"></div>
+              <div id="ms-filial-opts"></div>
+            </div>
+          </div>
+          <div class="ms-tag-wrap" id="ms-filial-tags"></div>
+        </div>
+
+        <!-- PERIOD WITH CALENDAR -->
+        <div class="filter-group">
+          <label>Período</label>
+          <div class="daterange-wrap" id="dr-wrap">
+            <button class="daterange-btn" id="dr-btn" onclick="toggleDR()">
+              <i class="ti ti-calendar" style="font-size:13px;color:var(--n4)"></i>
+              <span id="dr-label">Todo o período</span>
+              <i class="ti ti-chevron-down" style="font-size:11px;color:var(--n4);margin-left:auto"></i>
+            </button>
+            <div class="daterange-picker" id="dr-picker">
+              <div class="quick-periods">
+                <button class="qp-btn active" data-qp="" onclick="selectQP(this)">Todo o período</button>
+                <button class="qp-btn" data-qp="cm" onclick="selectQP(this)">Este mês</button>
+                <button class="qp-btn" data-qp="3" onclick="selectQP(this)">3 meses</button>
+                <button class="qp-btn" data-qp="6" onclick="selectQP(this)">6 meses</button>
+                <button class="qp-btn" data-qp="12" onclick="selectQP(this)">12 meses</button>
+              </div>
+              <div class="date-inputs">
+                <div style="flex:1">
+                  <label>De</label>
+                  <input type="date" id="dr-start">
+                </div>
+                <div style="flex:1">
+                  <label>Até</label>
+                  <input type="date" id="dr-end">
+                </div>
+              </div>
+              <div class="daterange-actions">
+                <button class="dr-clear" onclick="clearDR()">Limpar</button>
+                <button class="dr-apply" onclick="applyDR()">Aplicar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OTHER FILTERS -->
+        <div class="filter-group"><label>Mês</label>
+          <select id="f-month" onchange="applyFilters()"><option value="">Todos</option></select>
+        </div>
+        <div class="filter-group"><label>Pastor Pregação</label>
+          <select id="f-pastor" onchange="applyFilters()"><option value="">Todos</option></select>
+        </div>
+        <div class="filter-group"><label>Pastor Oferta</label>
+          <select id="f-ofertorio" onchange="applyFilters()"><option value="">Todos</option></select>
+        </div>
+        <div class="filter-group"><label>Culto</label>
+          <select id="f-culto" onchange="applyFilters()"><option value="">Todos</option></select>
+        </div>
+        <button class="btn-clear" onclick="clearFilters()"><i class="ti ti-filter-off"></i>Limpar</button>
+      </div>
+      <div class="filter-meta" id="filter-meta"></div>
+    </div>
+
+    <!-- PAGES -->
+    <div id="page-dashboard" class="page active"></div>
+    <div id="page-tendencias" class="page"></div>
+    <div id="page-filiais" class="page"></div>
+    <div id="page-pastores" class="page"></div>
+    <div id="page-cultos" class="page"></div>
+    <div id="page-pagamentos" class="page"></div>
+    <div id="page-rankings" class="page"></div>
+
+  </div>
+</div>
+</div>
+
+<script>
+const ALL_DATA = [{"dt":"2024-10-02","am":"2024-10","fi":"Estoril","cu":"Quarta Profética","dn":2638.0,"px":16794.0,"ca":11569.62,"tt":31004.72,"np":906,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2024-10-06","am":"2024-10","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1869.0,"px":30196.0,"ca":7040.77,"tt":39107.77,"np":662,"pr":"Pr Pedro Daniel","of":"Rafael Ribeiro"},{"dt":"2024-10-06","am":"2024-10","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2541.0,"px":12418.0,"ca":7040.77,"tt":21999.77,"np":283,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2024-10-06","am":"2024-10","fi":"Estoril","cu":"Domingo Noite Estoril","dn":868.0,"px":20683.0,"ca":7040.77,"tt":28594.27,"np":578,"pr":"Pr Pedro Daniel","of":"Kaio Henry"},{"dt":"2024-10-09","am":"2024-10","fi":"Estoril","cu":"Quarta Profética","dn":2638.0,"px":11822.0,"ca":490.08,"tt":14951.58,"np":650,"pr":"Pr.Gabriel Simões","of":"Pr.Gabriel Simões"},{"dt":"2024-10-13","am":"2024-10","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":4079.0,"px":10452.0,"ca":1204.0,"tt":15735.0,"np":413,"pr":"Rafael Ribeiro","of":"Rodrigo Noronha"},{"dt":"2024-10-13","am":"2024-10","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":622.0,"px":5480.0,"ca":1204.0,"tt":7456.0,"np":214,"pr":"Pra. Raquel","of":"Pr. Euller"},{"dt":"2024-10-13","am":"2024-10","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1141.0,"px":4861.0,"ca":1204.0,"tt":7206.35,"np":555,"pr":"Pr. Roge","of":"Clarisse"},{"dt":"2024-10-16","am":"2024-10","fi":"Estoril","cu":"Quarta Profética","dn":743.0,"px":7305.0,"ca":1790.0,"tt":9839.55,"np":643,"pr":"Pr. Rafael Belo","of":"Pr. Marco Laviola"},{"dt":"2024-10-20","am":"2024-10","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2097.0,"px":10081.0,"ca":1950.79,"tt":14129.84,"np":462,"pr":"Pr.Gabriel Simões","of":"Rodrigo Noronha"},{"dt":"2024-10-20","am":"2024-10","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":265.0,"px":10672.0,"ca":1950.79,"tt":12887.79,"np":213,"pr":"Pra. Lorraine","of":"Pr. Carlos Henrique"},{"dt":"2024-10-20","am":"2024-10","fi":"Estoril","cu":"Domingo Noite Estoril","dn":695.0,"px":14604.0,"ca":1950.79,"tt":17249.79,"np":608,"pr":"Pr.Gabriel Simões","of":"Pr. Roge"},{"dt":"2024-10-23","am":"2024-10","fi":"Estoril","cu":"Quarta Profética","dn":1681.0,"px":12533.0,"ca":1725.0,"tt":15942.3,"np":779,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2024-10-27","am":"2024-10","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2329.0,"px":13516.0,"ca":2292.93,"tt":18137.93,"np":694,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2024-10-27","am":"2024-10","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":765.0,"px":6227.0,"ca":2292.93,"tt":9284.93,"np":304,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2024-10-27","am":"2024-10","fi":"Estoril","cu":"Domingo Noite Estoril","dn":628.0,"px":10114.0,"ca":2292.93,"tt":13038.43,"np":642,"pr":"Pr Pedro Daniel","of":""},{"dt":"2024-10-30","am":"2024-10","fi":"Estoril","cu":"Quarta Profética","dn":2390.0,"px":14765.0,"ca":6760.0,"tt":23915.0,"np":724,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2024-11-03","am":"2024-11","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1411.0,"px":45424.0,"ca":1435.67,"tt":48270.67,"np":620,"pr":"Pr Pedro Daniel","of":"Diogo Montalvão"},{"dt":"2024-11-03","am":"2024-11","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":514.0,"px":6069.0,"ca":1435.67,"tt":8018.67,"np":316,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2024-11-03","am":"2024-11","fi":"Estoril","cu":"Domingo Noite Estoril","dn":933.0,"px":16978.0,"ca":1435.67,"tt":19348.67,"np":670,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2024-11-06","am":"2024-11","fi":"Estoril","cu":"Quarta Profética","dn":3370.0,"px":15969.0,"ca":2395.71,"tt":21736.21,"np":933,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2024-11-10","am":"2024-11","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1115.0,"px":23304.0,"ca":580.67,"tt":25002.17,"np":696,"pr":"Pr Pedro Daniel","of":""},{"dt":"2024-11-10","am":"2024-11","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":811.0,"px":5833.0,"ca":580.67,"tt":7225.57,"np":200,"pr":"Pr. Rafael Belo","of":"Shara"},{"dt":"2024-11-10","am":"2024-11","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1007.0,"px":12915.0,"ca":580.67,"tt":14503.17,"np":550,"pr":"Pr Pedro Daniel","of":"Jairo"},{"dt":"2024-11-13","am":"2024-11","fi":"Estoril","cu":"Quarta Profética","dn":1102.0,"px":16064.0,"ca":2340.0,"tt":19506.0,"np":685,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2024-11-17","am":"2024-11","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1999.0,"px":27186.0,"ca":3060.87,"tt":32246.87,"np":652,"pr":"Pr Pedro Daniel","of":"Diogo Montalvão"},{"dt":"2024-11-17","am":"2024-11","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2712.0,"px":7011.0,"ca":3060.87,"tt":12786.87,"np":409,"pr":"Pr Pedro Daniel","of":"Pr. Euller"},{"dt":"2024-11-17","am":"2024-11","fi":"Estoril","cu":"Domingo Noite Estoril","dn":661.0,"px":9666.0,"ca":3060.87,"tt":13388.12,"np":848,"pr":"Pr Pedro Daniel","of":"Pr. Euller"},{"dt":"2024-11-20","am":"2024-11","fi":"Estoril","cu":"Quarta Profética","dn":1121.0,"px":9723.0,"ca":1407.0,"tt":12251.0,"np":682,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2024-11-24","am":"2024-11","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":0.0,"px":15165.0,"ca":1162.67,"tt":16327.67,"np":516,"pr":"Diogo Montalvão","of":"Pra. Camila"},{"dt":"2024-11-24","am":"2024-11","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":0.0,"px":2500.0,"ca":1162.67,"tt":3662.67,"np":276,"pr":"Pra. Raquel","of":"Jeziel"},{"dt":"2024-11-24","am":"2024-11","fi":"Estoril","cu":"Domingo Noite Estoril","dn":0.0,"px":9061.0,"ca":1162.67,"tt":10223.67,"np":650,"pr":"Pr. Marco Laviola","of":"Flavinho"},{"dt":"2024-12-01","am":"2024-12","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2943.0,"px":21837.0,"ca":0.0,"tt":24782.0,"np":732,"pr":"Pr Pedro Daniel","of":"Rafael Ribeiro"},{"dt":"2024-12-01","am":"2024-12","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":693.0,"px":15513.0,"ca":0.0,"tt":16206.0,"np":435,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2024-12-01","am":"2024-12","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1921.0,"px":22083.0,"ca":0.0,"tt":24005.5,"np":820,"pr":"Pr Pedro Daniel","of":"Diogo Montalvão"},{"dt":"2024-12-03","am":"2024-12","fi":"Estoril","cu":"Tarde da benção","dn":862.0,"px":0.0,"ca":0.0,"tt":862.0,"np":0,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2024-12-04","am":"2024-12","fi":"Estoril","cu":"Quarta Profética","dn":464.0,"px":9864.0,"ca":0.0,"tt":10328.0,"np":805,"pr":"Pr Jackson Marques","of":"Diogo Montalvão"},{"dt":"2024-12-08","am":"2024-12","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2315.0,"px":13917.0,"ca":0.0,"tt":16232.0,"np":636,"pr":"Pr. Marco Laviola","of":"Jairo"},{"dt":"2024-12-08","am":"2024-12","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":3299.0,"px":5768.0,"ca":0.0,"tt":9067.0,"np":187,"pr":"Shara","of":"João Paulo"},{"dt":"2024-12-08","am":"2024-12","fi":"Estoril","cu":"Domingo Noite Estoril","dn":365.0,"px":13900.0,"ca":0.0,"tt":14268.0,"np":450,"pr":"Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2024-12-09","am":"2024-12","fi":"Estoril","cu":"BN ACTION","dn":152.0,"px":0.0,"ca":0.0,"tt":152.0,"np":0,"pr":"Malu Alburquerque","of":"Diogo Montalvão"},{"dt":"2024-12-10","am":"2024-12","fi":"Estoril","cu":"Tarde da benção","dn":765.0,"px":0.0,"ca":0.0,"tt":765.0,"np":0,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2024-12-13","am":"2024-12","fi":"Estoril","cu":"Quarta Profética","dn":4218.0,"px":22297.0,"ca":0.0,"tt":26515.1,"np":740,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2024-12-15","am":"2024-12","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":859.0,"px":13784.0,"ca":0.0,"tt":14643.0,"np":584,"pr":"Pr Pedro Daniel","of":"Bernardo"},{"dt":"2024-12-15","am":"2024-12","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":4344.0,"px":3157.0,"ca":0.0,"tt":7503.0,"np":270,"pr":"Pr Pedro Daniel","of":"Rodrigo Andrade"},{"dt":"2024-12-15","am":"2024-12","fi":"Estoril","cu":"Domingo Noite Estoril","dn":663.0,"px":13794.0,"ca":0.0,"tt":14458.15,"np":854,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2024-12-16","am":"2024-12","fi":"Estoril","cu":"Homens H2O","dn":258.0,"px":0.0,"ca":0.0,"tt":258.0,"np":0,"pr":"","of":""},{"dt":"2024-12-17","am":"2024-12","fi":"Estoril","cu":"Tarde da benção","dn":86.0,"px":0.0,"ca":0.0,"tt":86.0,"np":0,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2024-12-18","am":"2024-12","fi":"Estoril","cu":"Quarta Profética","dn":1919.0,"px":15006.0,"ca":0.0,"tt":16929.0,"np":740,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2024-12-20","am":"2024-12","fi":"Estoril","cu":"Influênciadoras do Reino","dn":392.0,"px":0.0,"ca":0.0,"tt":392.0,"np":0,"pr":"Pra Kelle","of":"Pra. Raquel"},{"dt":"2024-12-22","am":"2024-12","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1038.0,"px":16363.0,"ca":0.0,"tt":17402.0,"np":415,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2024-12-22","am":"2024-12","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":4070.0,"px":4728.0,"ca":0.0,"tt":8803.45,"np":364,"pr":"Pr. Euller","of":"Bernardo"},{"dt":"2024-12-22","am":"2024-12","fi":"Estoril","cu":"Domingo Noite Estoril","dn":2215.0,"px":12929.0,"ca":0.0,"tt":15145.5,"np":733,"pr":"Pr. Gabriel Magalhães","of":"Rafael Ribeiro"},{"dt":"2024-12-23","am":"2024-12","fi":"Estoril","cu":"Tarde da benção","dn":235.0,"px":0.0,"ca":0.0,"tt":247.4,"np":0,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2024-12-25","am":"2024-12","fi":"Estoril","cu":"Quarta Profética","dn":1745.0,"px":4390.83,"ca":0.0,"tt":6137.83,"np":420,"pr":"Pr Paulo Cezar","of":"Jeziel"},{"dt":"2024-12-29","am":"2024-12","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":12519.0,"px":18690.0,"ca":0.0,"tt":31209.0,"np":502,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2024-12-29","am":"2024-12","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":5495.0,"px":14060.0,"ca":0.0,"tt":19556.0,"np":492,"pr":"Pr Pedro Daniel","of":"Pr. Euller"},{"dt":"2024-12-29","am":"2024-12","fi":"Estoril","cu":"Domingo Noite Estoril","dn":2828.0,"px":15717.0,"ca":0.0,"tt":18545.0,"np":715,"pr":"Pr Pedro Daniel","of":"Rafael Ribeiro"},{"dt":"2024-12-31","am":"2024-12","fi":"Estoril","cu":"Culto da virada","dn":34892.0,"px":141633.0,"ca":0.0,"tt":176587.55,"np":0,"pr":"","of":""},{"dt":"2025-01-05","am":"2025-01","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":4192.0,"px":36513.0,"ca":0.0,"tt":40714.05,"np":803,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-01-05","am":"2025-01","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1382.0,"px":9357.0,"ca":0.0,"tt":10739.0,"np":461,"pr":"Pr Pedro Daniel","of":"Pr. Euller"},{"dt":"2025-01-05","am":"2025-01","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1340.0,"px":19891.0,"ca":0.0,"tt":21233.65,"np":757,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-01-07","am":"2025-01","fi":"Estoril","cu":"Tarde da benção","dn":221.0,"px":0.0,"ca":0.0,"tt":224.5,"np":153,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-01-08","am":"2025-01","fi":"Estoril","cu":"Quarta Profética","dn":1151.0,"px":20831.0,"ca":0.0,"tt":21983.5,"np":1237,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-01-12","am":"2025-01","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2680.0,"px":16785.0,"ca":0.0,"tt":19472.4,"np":808,"pr":"Pr Pedro Daniel","of":"Pr. Euller"},{"dt":"2025-01-12","am":"2025-01","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1624.0,"px":13884.0,"ca":0.0,"tt":15509.25,"np":396,"pr":"Pr Pedro Daniel","of":"Jairo"},{"dt":"2025-01-12","am":"2025-01","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1353.0,"px":12103.0,"ca":0.0,"tt":13456.0,"np":786,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-01-13","am":"2025-01","fi":"Estoril","cu":"Influênciadoras do Reino","dn":363.0,"px":0.0,"ca":0.0,"tt":368.25,"np":0,"pr":"Pra Kelle","of":"Pra. Raquel"},{"dt":"2025-01-14","am":"2025-01","fi":"Estoril","cu":"Tarde da benção","dn":90.0,"px":0.0,"ca":0.0,"tt":90.0,"np":104,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-01-15","am":"2025-01","fi":"Estoril","cu":"Quarta Profética","dn":1057.0,"px":14978.0,"ca":0.0,"tt":16035.0,"np":1014,"pr":"Ev. Caio Cezar","of":"Pr Pedro Daniel"},{"dt":"2025-01-19","am":"2025-01","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1354.0,"px":10041.0,"ca":0.0,"tt":11395.5,"np":0,"pr":"Tadeu","of":"Pr. Roge"},{"dt":"2025-01-19","am":"2025-01","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2892.0,"px":5513.0,"ca":0.0,"tt":8405.0,"np":790,"pr":"Tadeu","of":"Diogo Montalvão"},{"dt":"2025-01-19","am":"2025-01","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1357.0,"px":5745.0,"ca":0.0,"tt":7102.8,"np":629,"pr":"Tadeu","of":"Jairo"},{"dt":"2025-01-20","am":"2025-01","fi":"Estoril","cu":"BN ACTION","dn":50.0,"px":0.0,"ca":0.0,"tt":50.0,"np":341,"pr":"Bruno Motti","of":"Felipe Ladeira"},{"dt":"2025-01-22","am":"2025-01","fi":"Estoril","cu":"Tarde da benção","dn":93.0,"px":0.0,"ca":0.0,"tt":93.9,"np":0,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-01-23","am":"2025-01","fi":"Estoril","cu":"Quarta Profética","dn":4858.0,"px":12275.0,"ca":0.0,"tt":17133.0,"np":1243,"pr":"Pr. Raique Carmelo","of":"Pr. Raique Carmelo"},{"dt":"2025-01-24","am":"2025-01","fi":"Estoril","cu":"Vigília","dn":427.0,"px":0.0,"ca":0.0,"tt":427.05,"np":463,"pr":"Pr.Gabriel Simões","of":"Rodrigo Andrade"},{"dt":"2025-01-25","am":"2025-01","fi":"Estoril","cu":"Culto Wake","dn":84.0,"px":0.0,"ca":0.0,"tt":84.5,"np":102,"pr":"","of":""},{"dt":"2025-01-26","am":"2025-01","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2877.0,"px":11639.0,"ca":0.0,"tt":14516.0,"np":563,"pr":"Pr. Gabriel Magalhães","of":"Digol"},{"dt":"2025-01-26","am":"2025-01","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1258.0,"px":4732.0,"ca":0.0,"tt":5990.0,"np":325,"pr":"Pr. Marco Laviola","of":"Jairo"},{"dt":"2025-01-26","am":"2025-01","fi":"Estoril","cu":"Domingo Noite Estoril","dn":312.0,"px":6190.0,"ca":0.0,"tt":6502.0,"np":513,"pr":"Pr. Marco Laviola","of":"Jairo"},{"dt":"2025-01-27","am":"2025-01","fi":"Estoril","cu":"Homens H2O","dn":760.0,"px":0.0,"ca":0.0,"tt":760.5,"np":372,"pr":"Diogo Montalvão","of":"Pr. Marco Laviola"},{"dt":"2025-01-28","am":"2025-01","fi":"Estoril","cu":"Tarde da benção","dn":494.0,"px":0.0,"ca":0.0,"tt":497.4,"np":155,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-01-29","am":"2025-01","fi":"Estoril","cu":"Quarta Profética","dn":726.0,"px":5147.0,"ca":0.0,"tt":5873.0,"np":737,"pr":"Pr. Mateus Moraes","of":"Rafael Ribeiro"},{"dt":"2025-02-02","am":"2025-02","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":4740.0,"px":21717.0,"ca":0.0,"tt":26457.3,"np":890,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-02-02","am":"2025-02","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":483.0,"px":16218.0,"ca":0.0,"tt":16701.0,"np":618,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-02-02","am":"2025-02","fi":"Estoril","cu":"Domingo Noite Estoril","dn":2341.0,"px":16912.0,"ca":0.0,"tt":19255.0,"np":982,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-02-04","am":"2025-02","fi":"Estoril","cu":"Tarde da benção","dn":113.0,"px":0.0,"ca":0.0,"tt":114.0,"np":139,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-02-05","am":"2025-02","fi":"Estoril","cu":"Quarta Profética","dn":1782.0,"px":18998.0,"ca":0.0,"tt":20781.05,"np":1136,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-02-09","am":"2025-02","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2768.0,"px":49339.0,"ca":0.0,"tt":52107.0,"np":724,"pr":"Pr Pedro Daniel","of":"Rafael Ribeiro"},{"dt":"2025-02-09","am":"2025-02","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2375.0,"px":12002.0,"ca":0.0,"tt":14378.75,"np":295,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2025-02-09","am":"2025-02","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1285.0,"px":12040.0,"ca":0.0,"tt":13325.1,"np":569,"pr":"Pr Pedro Daniel","of":"Pr. Roge"},{"dt":"2025-02-11","am":"2025-02","fi":"Estoril","cu":"Tarde da benção","dn":202.0,"px":0.0,"ca":0.0,"tt":202.0,"np":98,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-02-12","am":"2025-02","fi":"Estoril","cu":"Quarta Profética","dn":3198.0,"px":14161.0,"ca":0.0,"tt":17360.1,"np":1330,"pr":"Pr Pedro Daniel","of":"Jairo"},{"dt":"2025-02-16","am":"2025-02","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1887.0,"px":10689.0,"ca":0.0,"tt":12577.6,"np":618,"pr":"Pr Pedro Daniel","of":"Jairo"},{"dt":"2025-02-16","am":"2025-02","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2494.0,"px":6517.0,"ca":0.0,"tt":9011.0,"np":363,"pr":"Pr Pedro Daniel","of":"Pr. Euller"},{"dt":"2025-02-16","am":"2025-02","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1507.0,"px":13528.0,"ca":0.0,"tt":15036.0,"np":588,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-02-17","am":"2025-02","fi":"Estoril","cu":"Homens H2O","dn":1303.0,"px":0.0,"ca":0.0,"tt":1303.0,"np":463,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-02-18","am":"2025-02","fi":"Estoril","cu":"Tarde da benção","dn":276.0,"px":0.0,"ca":0.0,"tt":277.5,"np":83,"pr":"Pr. Roge","of":"Pr. Roge"},{"dt":"2025-02-20","am":"2025-02","fi":"Estoril","cu":"Quarta Profética","dn":2809.0,"px":24510.0,"ca":0.0,"tt":27322.5,"np":1144,"pr":"Pr.Eliel","of":"Pr.Eliel"},{"dt":"2025-02-23","am":"2025-02","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":753.0,"px":7378.0,"ca":0.0,"tt":8132.0,"np":419,"pr":"Pr. Aba","of":"Rafael Ribeiro"},{"dt":"2025-02-23","am":"2025-02","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":3126.0,"px":9226.0,"ca":0.0,"tt":12352.0,"np":1250,"pr":"Pr. Aba","of":"Rafael Ribeiro"},{"dt":"2025-02-23","am":"2025-02","fi":"Estoril","cu":"Domingo Noite Estoril","dn":790.0,"px":8810.0,"ca":0.0,"tt":9600.0,"np":635,"pr":"Pr. Aba","of":"Rafael Ribeiro"},{"dt":"2025-02-24","am":"2025-02","fi":"Estoril","cu":"BN ACTION","dn":150.0,"px":0.0,"ca":0.0,"tt":150.0,"np":140,"pr":"Matheus Martins","of":"Felipe Ladeira"},{"dt":"2025-02-25","am":"2025-02","fi":"Estoril","cu":"Tarde da benção","dn":474.0,"px":0.0,"ca":0.0,"tt":474.0,"np":118,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-02-26","am":"2025-02","fi":"Estoril","cu":"Quarta Profética","dn":2540.0,"px":14839.0,"ca":0.0,"tt":17383.0,"np":0,"pr":"","of":""},{"dt":"2025-03-02","am":"2025-03","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1368.0,"px":17484.0,"ca":0.0,"tt":18852.6,"np":499,"pr":"","of":""},{"dt":"2025-03-02","am":"2025-03","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":511.0,"px":11134.0,"ca":0.0,"tt":11645.4,"np":322,"pr":"","of":""},{"dt":"2025-03-02","am":"2025-03","fi":"Estoril","cu":"Domingo Noite Estoril","dn":483.0,"px":16569.0,"ca":0.0,"tt":17052.0,"np":516,"pr":"","of":""},{"dt":"2025-03-04","am":"2025-03","fi":"Estoril","cu":"Tarde da benção","dn":614.0,"px":0.0,"ca":0.0,"tt":619.0,"np":451,"pr":"Pra. Camila","of":"Raone"},{"dt":"2025-03-05","am":"2025-03","fi":"Estoril","cu":"Quarta Profética","dn":2051.0,"px":21081.0,"ca":0.0,"tt":23134.1,"np":906,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-03-09","am":"2025-03","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2270.0,"px":25598.0,"ca":0.0,"tt":27868.0,"np":673,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-03-09","am":"2025-03","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":5159.0,"px":15562.0,"ca":0.0,"tt":20721.0,"np":545,"pr":"Pr Pedro Daniel","of":"João Paulo"},{"dt":"2025-03-09","am":"2025-03","fi":"Estoril","cu":"Domingo Noite Estoril","dn":373.0,"px":23948.0,"ca":0.0,"tt":24321.25,"np":654,"pr":"Pr Pedro Daniel","of":"João Paulo"},{"dt":"2025-03-10","am":"2025-03","fi":"Estoril","cu":"Influênciadoras do Reino","dn":1906.0,"px":0.0,"ca":0.0,"tt":1906.0,"np":600,"pr":"Pra. Suellen","of":"Glaucia"},{"dt":"2025-03-11","am":"2025-03","fi":"Estoril","cu":"Tarde da benção","dn":172.0,"px":0.0,"ca":0.0,"tt":180.55,"np":118,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-03-12","am":"2025-03","fi":"Estoril","cu":"Quarta Profética","dn":1684.0,"px":20348.0,"ca":0.0,"tt":22033.5,"np":1204,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-03-16","am":"2025-03","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":946.0,"px":11370.0,"ca":0.0,"tt":12316.0,"np":583,"pr":"Pr Pedro Daniel","of":"Diogo Montalvão"},{"dt":"2025-03-16","am":"2025-03","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2181.0,"px":6681.0,"ca":0.0,"tt":8862.6,"np":480,"pr":"Pr Pedro Daniel","of":"Pra. Raquel"},{"dt":"2025-03-16","am":"2025-03","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1657.0,"px":11659.0,"ca":0.0,"tt":13318.0,"np":687,"pr":"Pr Pedro Daniel","of":"Pr. Lucas Bezalel"},{"dt":"2025-03-17","am":"2025-03","fi":"Estoril","cu":"Homens H2O","dn":1054.0,"px":0.0,"ca":0.0,"tt":1054.0,"np":190,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-03-18","am":"2025-03","fi":"Estoril","cu":"Tarde da benção","dn":72.0,"px":0.0,"ca":0.0,"tt":72.0,"np":126,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-03-19","am":"2025-03","fi":"Estoril","cu":"Quarta Profética","dn":1009.0,"px":13812.0,"ca":0.0,"tt":14823.6,"np":987,"pr":"Pr Pedro Daniel","of":"Kleber Malaquias"},{"dt":"2025-03-23","am":"2025-03","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":934.0,"px":10506.0,"ca":0.0,"tt":11440.0,"np":480,"pr":"Diogo Montalvão","of":"João Paulo"},{"dt":"2025-03-23","am":"2025-03","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1457.0,"px":7422.0,"ca":0.0,"tt":8879.0,"np":390,"pr":"Pr. Euller","of":"Pra. Raquel"},{"dt":"2025-03-23","am":"2025-03","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1018.0,"px":3358.0,"ca":0.0,"tt":4377.5,"np":372,"pr":"Pr. Rafael Ribeiro","of":"Pra. Camila"},{"dt":"2025-03-24","am":"2025-03","fi":"Estoril","cu":"BN ACTION","dn":120.0,"px":0.0,"ca":0.0,"tt":120.0,"np":0,"pr":"","of":""},{"dt":"2025-03-25","am":"2025-03","fi":"Estoril","cu":"Tarde da benção","dn":707.0,"px":0.0,"ca":0.0,"tt":709.7,"np":0,"pr":"","of":""},{"dt":"2025-03-26","am":"2025-03","fi":"Estoril","cu":"Quarta Profética","dn":367.0,"px":7890.0,"ca":0.0,"tt":8257.0,"np":685,"pr":"Pr.Gabriel Simões","of":"Pr.Gabriel Simões"},{"dt":"2025-03-30","am":"2025-03","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":694.0,"px":11881.0,"ca":0.0,"tt":12575.0,"np":720,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-03-30","am":"2025-03","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":426.0,"px":11874.0,"ca":0.0,"tt":12300.0,"np":564,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-03-30","am":"2025-03","fi":"Estoril","cu":"Domingo Noite Estoril","dn":778.0,"px":9490.0,"ca":0.0,"tt":10269.0,"np":688,"pr":"Pr. Gabriel Magalhães","of":"Pr. Euller"},{"dt":"2025-04-01","am":"2025-04","fi":"Estoril","cu":"Tarde da benção","dn":242.0,"px":0.0,"ca":0.0,"tt":242.0,"np":80,"pr":"Pr. Roge","of":"Lais"},{"dt":"2025-04-02","am":"2025-04","fi":"Estoril","cu":"Quarta Profética","dn":1748.0,"px":16261.0,"ca":0.0,"tt":18015.65,"np":1244,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-04-06","am":"2025-04","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2107.0,"px":66040.0,"ca":0.0,"tt":68148.95,"np":913,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-04-06","am":"2025-04","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2768.0,"px":27361.0,"ca":0.0,"tt":30129.0,"np":715,"pr":"Pr Pedro Daniel","of":"Pr Amarildo"},{"dt":"2025-04-06","am":"2025-04","fi":"Estoril","cu":"Domingo Noite Estoril","dn":924.0,"px":21109.0,"ca":0.0,"tt":22034.0,"np":697,"pr":"Pr Pedro Daniel","of":"Edson"},{"dt":"2025-04-08","am":"2025-04","fi":"Estoril","cu":"Tarde da benção","dn":37.0,"px":0.0,"ca":0.0,"tt":37.0,"np":72,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-04-09","am":"2025-04","fi":"Estoril","cu":"Quarta Profética","dn":2276.0,"px":13319.0,"ca":0.0,"tt":15597.25,"np":922,"pr":"Pr Pedro Daniel","of":"Pr. Lucas Bezalel"},{"dt":"2025-04-12","am":"2025-04","fi":"Estoril","cu":"Family Connection","dn":541.0,"px":0.0,"ca":0.0,"tt":542.05,"np":0,"pr":"","of":""},{"dt":"2025-04-13","am":"2025-04","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":846.0,"px":15256.0,"ca":0.0,"tt":16108.5,"np":639,"pr":"Pr Pedro Daniel","of":"Rodrigo Andrade"},{"dt":"2025-04-13","am":"2025-04","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2172.0,"px":10291.0,"ca":0.0,"tt":12463.0,"np":546,"pr":"Pr Pedro Daniel","of":"João Paulo"},{"dt":"2025-04-13","am":"2025-04","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1197.0,"px":13240.0,"ca":0.0,"tt":14437.1,"np":453,"pr":"Pr Pedro Daniel","of":"Pr. Euller"},{"dt":"2025-04-14","am":"2025-04","fi":"Estoril","cu":"Influênciadoras do Reino","dn":589.32,"px":0.0,"ca":0.0,"tt":589.32,"np":394,"pr":"Pra. Natália Bello","of":"Rafaela Guerra"},{"dt":"2025-04-15","am":"2025-04","fi":"Estoril","cu":"Tarde da benção","dn":160.0,"px":0.0,"ca":0.0,"tt":163.0,"np":75,"pr":"Pr. Roge","of":"Pr. Roge"},{"dt":"2025-04-16","am":"2025-04","fi":"Estoril","cu":"Quarta Profética","dn":2432.0,"px":11845.0,"ca":0.0,"tt":14277.0,"np":608,"pr":"Pr. Rafael Belo","of":"Pr. Euller"},{"dt":"2025-04-20","am":"2025-04","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":710.0,"px":14900.0,"ca":0.0,"tt":15611.0,"np":611,"pr":"Pr Pedro Daniel","of":"Rafael Ribeiro"},{"dt":"2025-04-20","am":"2025-04","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1493.0,"px":7791.0,"ca":0.0,"tt":9285.75,"np":527,"pr":"Pr Pedro Daniel","of":"Pra. Raquel"},{"dt":"2025-04-20","am":"2025-04","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1110.0,"px":4258.0,"ca":0.0,"tt":5371.5,"np":615,"pr":"Pr Pedro Daniel","of":"Pra. Camila"},{"dt":"2025-04-21","am":"2025-04","fi":"Estoril","cu":"Homens H2O","dn":16.0,"px":0.0,"ca":0.0,"tt":16.0,"np":185,"pr":"Pr. Roge","of":"Pr. Marco Laviola"},{"dt":"2025-04-22","am":"2025-04","fi":"Estoril","cu":"Tarde da benção","dn":198.0,"px":0.0,"ca":0.0,"tt":199.35,"np":74,"pr":"Pra. Camila","of":"Pra. Camila"},{"dt":"2025-04-23","am":"2025-04","fi":"Estoril","cu":"Quarta Profética","dn":1600.0,"px":11790.0,"ca":0.0,"tt":13390.0,"np":768,"pr":"Pr Douglas","of":"Pr Pedro Daniel"},{"dt":"2025-04-27","am":"2025-04","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":700.0,"px":18008.0,"ca":0.0,"tt":18708.25,"np":540,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-04-27","am":"2025-04","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":428.0,"px":7219.0,"ca":0.0,"tt":7647.1,"np":529,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-04-27","am":"2025-04","fi":"Estoril","cu":"Domingo Noite Estoril","dn":919.0,"px":7805.0,"ca":0.0,"tt":8725.0,"np":700,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-04-28","am":"2025-04","fi":"Estoril","cu":"BN ACTION","dn":50.0,"px":0.0,"ca":0.0,"tt":50.0,"np":133,"pr":"Diogo Montalvão","of":"Diogo Montalvão"},{"dt":"2025-04-29","am":"2025-04","fi":"Estoril","cu":"Tarde da benção","dn":235.0,"px":0.0,"ca":0.0,"tt":235.0,"np":65,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-04-30","am":"2025-04","fi":"Estoril","cu":"Quarta Profética","dn":3393.0,"px":35361.0,"ca":0.0,"tt":38754.0,"np":711,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-05-04","am":"2025-05","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":3108.0,"px":25525.0,"ca":0.0,"tt":28636.0,"np":732,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-05-04","am":"2025-05","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":3023.0,"px":19883.0,"ca":0.0,"tt":22906.0,"np":658,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-05-04","am":"2025-05","fi":"Estoril","cu":"Domingo Noite Estoril","dn":841.0,"px":19617.0,"ca":0.0,"tt":20459.25,"np":600,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-05-06","am":"2025-05","fi":"Estoril","cu":"Tarde da benção","dn":177.0,"px":0.0,"ca":0.0,"tt":177.0,"np":84,"pr":"Pr. Rafael Belo","of":"Pr. Lucas Bezalel"},{"dt":"2025-05-07","am":"2025-05","fi":"Estoril","cu":"Quarta Profética","dn":6124.0,"px":20606.0,"ca":0.0,"tt":26730.0,"np":855,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2025-05-11","am":"2025-05","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2441.0,"px":21789.0,"ca":0.0,"tt":24230.0,"np":383,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-05-11","am":"2025-05","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":647.0,"px":14040.0,"ca":0.0,"tt":14687.0,"np":327,"pr":"Pr Pedro Daniel","of":"Pr. Rafael Belo"},{"dt":"2025-05-11","am":"2025-05","fi":"Estoril","cu":"Domingo Noite Estoril","dn":2054.0,"px":10100.0,"ca":0.0,"tt":12155.0,"np":510,"pr":"Pra Vanessa","of":"Glaucia"},{"dt":"2025-05-12","am":"2025-05","fi":"Estoril","cu":"Influênciadoras do Reino","dn":561.0,"px":0.0,"ca":0.0,"tt":561.25,"np":323,"pr":"Pr. Roge","of":"Luizinho (consolidação)"},{"dt":"2025-05-13","am":"2025-05","fi":"Estoril","cu":"Tarde da benção","dn":55.0,"px":0.0,"ca":0.0,"tt":55.0,"np":82,"pr":"Pr Pedro Daniel","of":"Pr. Rafael Belo"},{"dt":"2025-05-14","am":"2025-05","fi":"Estoril","cu":"Quarta Profética","dn":4061.0,"px":12850.0,"ca":0.0,"tt":16911.5,"np":700,"pr":"Pr Pedro Daniel","of":"Rafael Ribeiro"},{"dt":"2025-05-18","am":"2025-05","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1086.0,"px":18743.0,"ca":0.0,"tt":19829.0,"np":561,"pr":"Pr Pedro Daniel","of":"Pra. Lorraine"},{"dt":"2025-05-18","am":"2025-05","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1791.0,"px":9944.0,"ca":0.0,"tt":11735.0,"np":548,"pr":"Pr Pedro Daniel","of":"Pr Amarildo"},{"dt":"2025-05-18","am":"2025-05","fi":"Estoril","cu":"Domingo Noite Estoril","dn":3540.0,"px":12223.0,"ca":0.0,"tt":15763.0,"np":325,"pr":"Varios","of":"Pr. Marco Laviola"},{"dt":"2025-05-19","am":"2025-05","fi":"Estoril","cu":"Homens H2O","dn":265.0,"px":0.0,"ca":0.0,"tt":265.0,"np":486,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-05-20","am":"2025-05","fi":"Estoril","cu":"Tarde da benção","dn":190.0,"px":0.0,"ca":0.0,"tt":190.0,"np":84,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-05-21","am":"2025-05","fi":"Estoril","cu":"Quarta Profética","dn":2878.0,"px":25742.0,"ca":0.0,"tt":28621.0,"np":995,"pr":"Diogo Montalvão","of":"Pra Vanessa"},{"dt":"2025-05-25","am":"2025-05","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":686.0,"px":8836.0,"ca":0.0,"tt":9522.0,"np":400,"pr":"Pr. Marco Laviola","of":"Pr. Lucas Bezalel"},{"dt":"2025-05-25","am":"2025-05","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":769.0,"px":12394.0,"ca":0.0,"tt":13167.0,"np":417,"pr":"Pr. Rafael Ribeiro","of":"Pr. Roge"},{"dt":"2025-05-25","am":"2025-05","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1272.0,"px":9416.0,"ca":0.0,"tt":10688.0,"np":398,"pr":"Varios","of":"Rodrigo Noronha"},{"dt":"2025-05-26","am":"2025-05","fi":"Estoril","cu":"BN ACTION","dn":130.0,"px":0.0,"ca":0.0,"tt":130.0,"np":223,"pr":"Pr. Roge","of":"Edson"},{"dt":"2025-05-27","am":"2025-05","fi":"Estoril","cu":"Tarde da benção","dn":538.0,"px":0.0,"ca":0.0,"tt":538.0,"np":96,"pr":"Pr Arnon","of":"Rafael Ribeiro"},{"dt":"2025-05-28","am":"2025-05","fi":"Estoril","cu":"Quarta Profética","dn":829.0,"px":6839.0,"ca":0.0,"tt":7668.0,"np":650,"pr":"","of":""},{"dt":"2025-06-01","am":"2025-06","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1315.0,"px":17863.0,"ca":0.0,"tt":19178.0,"np":753,"pr":"Pr Michel","of":"Rodrigo Noronha"},{"dt":"2025-06-01","am":"2025-06","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1089.0,"px":16508.0,"ca":0.0,"tt":17599.1,"np":830,"pr":"Pr. Edivaldo Simão","of":"Pr. Carlos Henrique"},{"dt":"2025-06-01","am":"2025-06","fi":"Estoril","cu":"Domingo Noite Estoril","dn":2117.0,"px":21340.0,"ca":0.0,"tt":23457.0,"np":1128,"pr":"Pr. Edivaldo Simão","of":"Pr. Roge"},{"dt":"2025-06-01","am":"2025-06","fi":"Estoril","cu":"Oferta especial","dn":1493.0,"px":0.0,"ca":0.0,"tt":1493.5,"np":0,"pr":"","of":""},{"dt":"2025-06-03","am":"2025-06","fi":"Estoril","cu":"Tarde da benção","dn":369.0,"px":0.0,"ca":0.0,"tt":369.0,"np":96,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-06-04","am":"2025-06","fi":"Estoril","cu":"Quarta Profética","dn":724.0,"px":16907.0,"ca":0.0,"tt":17631.0,"np":816,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-06-08","am":"2025-06","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":705.0,"px":19953.0,"ca":0.0,"tt":20658.55,"np":470,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-06-08","am":"2025-06","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1251.0,"px":16006.0,"ca":0.0,"tt":17257.0,"np":415,"pr":"Pr Pedro Daniel","of":"Pr Amarildo"},{"dt":"2025-06-08","am":"2025-06","fi":"Estoril","cu":"Domingo Noite Estoril","dn":304.0,"px":11537.0,"ca":0.0,"tt":11841.0,"np":535,"pr":"Pr Pedro Daniel","of":"Jeziel"},{"dt":"2025-06-09","am":"2025-06","fi":"Estoril","cu":"Influênciadoras do Reino","dn":477.0,"px":0.0,"ca":0.0,"tt":477.5,"np":519,"pr":"Pr Pedro Daniel","of":"Pra. Lorraine"},{"dt":"2025-06-10","am":"2025-06","fi":"Estoril","cu":"Tarde da benção","dn":221.0,"px":0.0,"ca":0.0,"tt":221.0,"np":111,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-06-11","am":"2025-06","fi":"Estoril","cu":"Quarta Profética","dn":2212.0,"px":15092.0,"ca":0.0,"tt":17309.2,"np":785,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-06-15","am":"2025-06","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1024.0,"px":14488.0,"ca":0.0,"tt":15512.0,"np":465,"pr":"Pr Pedro Daniel","of":"Pr. Carlos Henrique"},{"dt":"2025-06-15","am":"2025-06","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1566.0,"px":15330.0,"ca":0.0,"tt":16896.65,"np":555,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-06-15","am":"2025-06","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1920.0,"px":9949.0,"ca":0.0,"tt":11870.0,"np":434,"pr":"Pr Pedro Daniel","of":"Pr. Roge"},{"dt":"2025-06-16","am":"2025-06","fi":"Estoril","cu":"Homens H2O","dn":310.0,"px":0.0,"ca":0.0,"tt":310.0,"np":288,"pr":"Pr. Marco Laviola","of":"Gustavo"},{"dt":"2025-06-17","am":"2025-06","fi":"Estoril","cu":"Tarde da benção","dn":215.0,"px":0.0,"ca":0.0,"tt":215.0,"np":100,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-06-18","am":"2025-06","fi":"Estoril","cu":"Quarta Profética","dn":1954.0,"px":16589.0,"ca":0.0,"tt":18543.0,"np":788,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-06-22","am":"2025-06","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2176.0,"px":18475.0,"ca":0.0,"tt":20651.0,"np":604,"pr":"Pr. Rafael Belo","of":"Pr. Lucas Bezalel"},{"dt":"2025-06-22","am":"2025-06","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":186.0,"px":5719.0,"ca":0.0,"tt":5906.3,"np":506,"pr":"Pr. Rafael Belo","of":"Pra. Lorraine"},{"dt":"2025-06-22","am":"2025-06","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1261.0,"px":20273.0,"ca":0.0,"tt":21537.0,"np":530,"pr":"Pr. Rafael Belo","of":"Pr Pedro Daniel"},{"dt":"2025-06-24","am":"2025-06","fi":"Estoril","cu":"Tarde da benção","dn":315.0,"px":0.0,"ca":0.0,"tt":315.0,"np":0,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-06-25","am":"2025-06","fi":"Estoril","cu":"Quarta Profética","dn":1634.0,"px":21294.0,"ca":0.0,"tt":22929.5,"np":0,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-06-29","am":"2025-06","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1238.0,"px":24404.0,"ca":0.0,"tt":25643.0,"np":0,"pr":"Tadeu","of":"Pr Pedro Daniel"},{"dt":"2025-06-29","am":"2025-06","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1449.0,"px":7268.0,"ca":0.0,"tt":8717.0,"np":0,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2025-06-29","am":"2025-06","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1358.0,"px":14290.0,"ca":0.0,"tt":15653.3,"np":0,"pr":"Pr Pedro Daniel","of":"Pr. Carlos Henrique"},{"dt":"2025-07-01","am":"2025-07","fi":"Estoril","cu":"Tarde da benção","dn":247.0,"px":0.0,"ca":0.0,"tt":249.5,"np":100,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-07-02","am":"2025-07","fi":"Estoril","cu":"Quarta Profética","dn":2915.0,"px":21795.0,"ca":0.0,"tt":24717.25,"np":1100,"pr":"Pr. Aba","of":"Pr Pedro Daniel"},{"dt":"2025-07-04","am":"2025-07","fi":"Estoril","cu":"Vigília","dn":925.0,"px":0.0,"ca":0.0,"tt":931.15,"np":667,"pr":"","of":""},{"dt":"2025-07-06","am":"2025-07","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":3590.0,"px":25570.0,"ca":0.0,"tt":29162.55,"np":695,"pr":"Pr Pedro Daniel","of":"Rafael Ribeiro"},{"dt":"2025-07-06","am":"2025-07","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1009.0,"px":26809.0,"ca":0.0,"tt":27818.15,"np":675,"pr":"Pr Pedro Daniel","of":"Pr. Lucas Bezalel"},{"dt":"2025-07-06","am":"2025-07","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1905.0,"px":29611.0,"ca":0.0,"tt":31516.0,"np":736,"pr":"Pr Pedro Daniel","of":"Pr. Roge"},{"dt":"2025-07-08","am":"2025-07","fi":"Estoril","cu":"Tarde da benção","dn":247.0,"px":0.0,"ca":0.0,"tt":247.0,"np":0,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-07-09","am":"2025-07","fi":"Estoril","cu":"Quarta Profética","dn":2341.0,"px":18793.0,"ca":0.0,"tt":21134.6,"np":849,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-07-10","am":"2025-07","fi":"Boulevard","cu":"Culto teste","dn":438.0,"px":3000.0,"ca":0.0,"tt":3445.0,"np":0,"pr":"","of":""},{"dt":"2025-07-12","am":"2025-07","fi":"Estoril","cu":"Encerramento seminário","dn":239.0,"px":0.0,"ca":0.0,"tt":239.0,"np":0,"pr":"","of":""},{"dt":"2025-07-12","am":"2025-07","fi":"Estoril","cu":"Culto Wake","dn":14.0,"px":0.0,"ca":0.0,"tt":14.0,"np":0,"pr":"","of":""},{"dt":"2025-07-13","am":"2025-07","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1309.0,"px":32218.0,"ca":0.0,"tt":33527.0,"np":0,"pr":"Pr Marcus Paulo","of":"Pr. Roge"},{"dt":"2025-07-13","am":"2025-07","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2364.0,"px":14462.0,"ca":0.0,"tt":16829.05,"np":0,"pr":"Edson","of":"Pr Amarildo"},{"dt":"2025-07-13","am":"2025-07","fi":"Estoril","cu":"Domingo Noite Estoril","dn":796.0,"px":6041.0,"ca":0.0,"tt":6837.0,"np":0,"pr":"Pr. Rafael Ribeiro","of":"Jairo"},{"dt":"2025-07-14","am":"2025-07","fi":"Estoril","cu":"Influênciadoras do Reino","dn":246.0,"px":0.0,"ca":0.0,"tt":246.0,"np":0,"pr":"Pra. Bianca","of":"Pra Vanessa"},{"dt":"2025-07-15","am":"2025-07","fi":"Estoril","cu":"Tarde da benção","dn":400.0,"px":0.0,"ca":0.0,"tt":404.75,"np":0,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-07-16","am":"2025-07","fi":"Estoril","cu":"Quarta Profética","dn":1146.0,"px":8053.0,"ca":0.0,"tt":9200.0,"np":0,"pr":"Pr Pedro Daniel","of":"Pr. Rafael Belo"},{"dt":"2025-07-17","am":"2025-07","fi":"Boulevard","cu":"Culto inauguração","dn":2008.0,"px":28876.0,"ca":0.0,"tt":30891.5,"np":1073,"pr":"Apóstolo Joel Pereira","of":"Apóstolo Joel Pereira"},{"dt":"2025-07-20","am":"2025-07","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":945.0,"px":11367.0,"ca":0.0,"tt":12316.25,"np":0,"pr":"Pr.Gabriel Simões","of":"Pr. Roge"},{"dt":"2025-07-20","am":"2025-07","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2442.0,"px":10400.0,"ca":0.0,"tt":12842.0,"np":0,"pr":"Pr Pedro Daniel","of":"Pr Amarildo"},{"dt":"2025-07-20","am":"2025-07","fi":"Estoril","cu":"Domingo Noite Estoril","dn":567.0,"px":5525.0,"ca":0.0,"tt":6092.0,"np":0,"pr":"Pr. Lucas Bezalel","of":"Rafael Ribeiro"},{"dt":"2025-07-20","am":"2025-07","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":264.0,"px":4133.0,"ca":0.0,"tt":4397.0,"np":350,"pr":"Pr. Marco Laviola","of":"Pr Pedro Daniel"},{"dt":"2025-07-20","am":"2025-07","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":1526.0,"px":11753.0,"ca":0.0,"tt":13279.0,"np":813,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-07-21","am":"2025-07","fi":"Estoril","cu":"Homens H2O","dn":494.0,"px":0.0,"ca":0.0,"tt":494.0,"np":0,"pr":"Léo Zagueiro","of":"Pr. Marco Laviola"},{"dt":"2025-07-22","am":"2025-07","fi":"Estoril","cu":"Tarde da benção","dn":160.0,"px":0.0,"ca":0.0,"tt":160.0,"np":0,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-07-23","am":"2025-07","fi":"Estoril","cu":"Quarta Profética","dn":1133.0,"px":18316.0,"ca":0.0,"tt":19449.0,"np":0,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-07-24","am":"2025-07","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":0.0,"px":2942.0,"ca":0.0,"tt":2942.0,"np":281,"pr":"Pr Jackson Antônio","of":"Pr Pedro Daniel"},{"dt":"2025-07-27","am":"2025-07","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1316.0,"px":16994.0,"ca":0.0,"tt":18313.2,"np":0,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-07-27","am":"2025-07","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1249.0,"px":6795.0,"ca":0.0,"tt":8044.25,"np":0,"pr":"Pr Pedro Daniel","of":"Pr. Lucas Bezalel"},{"dt":"2025-07-27","am":"2025-07","fi":"Estoril","cu":"Domingo Noite Estoril","dn":407.0,"px":14832.0,"ca":0.0,"tt":15239.25,"np":0,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-07-27","am":"2025-07","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":0.0,"px":1517.0,"ca":0.0,"tt":1517.0,"np":180,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-07-27","am":"2025-07","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":0.0,"px":1107.0,"ca":0.0,"tt":1107.0,"np":148,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-07-29","am":"2025-07","fi":"Estoril","cu":"Tarde da benção","dn":180.0,"px":0.0,"ca":0.0,"tt":180.0,"np":0,"pr":"Pr. Roge","of":"João Paulo"},{"dt":"2025-07-30","am":"2025-07","fi":"Estoril","cu":"Quarta Profética","dn":479.0,"px":10645.0,"ca":0.0,"tt":11124.1,"np":0,"pr":"Pr Pedro Daniel","of":"Rafael Ribeiro"},{"dt":"2025-07-31","am":"2025-07","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":0.0,"px":4348.0,"ca":0.0,"tt":4348.0,"np":360,"pr":"Pr Pedro Daniel","of":""},{"dt":"2025-08-02","am":"2025-08","fi":"Boulevard","cu":"Conferencia respire Boulevard","dn":1552.0,"px":24280.0,"ca":0.0,"tt":25832.0,"np":0,"pr":"","of":""},{"dt":"2025-08-03","am":"2025-08","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2313.0,"px":23975.0,"ca":0.0,"tt":26292.35,"np":527,"pr":"Pr. Rafael Ribeiro","of":"Rodrigo Andrade"},{"dt":"2025-08-03","am":"2025-08","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1352.0,"px":10870.0,"ca":0.0,"tt":12222.0,"np":400,"pr":"Pr. Rafael Belo","of":"Pr Amarildo"},{"dt":"2025-08-03","am":"2025-08","fi":"Estoril","cu":"Domingo Noite Estoril","dn":360.0,"px":12810.0,"ca":0.0,"tt":13176.95,"np":515,"pr":"Pr. Rafael Belo","of":"Pr. Roge"},{"dt":"2025-08-03","am":"2025-08","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":664.0,"px":5585.0,"ca":0.0,"tt":6249.0,"np":146,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-08-03","am":"2025-08","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":797.0,"px":5619.0,"ca":0.0,"tt":6416.0,"np":407,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-08-05","am":"2025-08","fi":"Estoril","cu":"Tarde da benção","dn":75.0,"px":0.0,"ca":0.0,"tt":75.0,"np":83,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-08-06","am":"2025-08","fi":"Estoril","cu":"Quarta Profética","dn":1844.0,"px":16861.0,"ca":0.0,"tt":18705.0,"np":664,"pr":"Ev. Caio Cezar","of":"Pr Pedro Daniel"},{"dt":"2025-08-07","am":"2025-08","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":947.0,"px":7021.0,"ca":0.0,"tt":7968.0,"np":357,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-08-07","am":"2025-08","fi":"Pará de Minas","cu":"Culto Para de Minas","dn":2707.0,"px":0.0,"ca":0.0,"tt":2707.5,"np":0,"pr":"","of":""},{"dt":"2025-08-10","am":"2025-08","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":694.0,"px":11602.0,"ca":0.0,"tt":12297.0,"np":272,"pr":"Pr Pedro Daniel","of":"Rafael Ribeiro"},{"dt":"2025-08-10","am":"2025-08","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":10.0,"px":10221.0,"ca":0.0,"tt":10231.0,"np":183,"pr":"Pr Pedro Daniel","of":"Pr Amarildo"},{"dt":"2025-08-10","am":"2025-08","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1265.0,"px":6935.0,"ca":0.0,"tt":8200.25,"np":314,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2025-08-10","am":"2025-08","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":201.0,"px":2904.0,"ca":0.0,"tt":3106.25,"np":59,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-08-10","am":"2025-08","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":71.0,"px":8863.0,"ca":0.0,"tt":8934.0,"np":312,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-08-11","am":"2025-08","fi":"Estoril","cu":"Influênciadoras do Reino","dn":502.0,"px":0.0,"ca":0.0,"tt":502.0,"np":290,"pr":"Pra. Mel","of":"Esther"},{"dt":"2025-08-11","am":"2025-08","fi":"Estoril","cu":"Legendários","dn":52.0,"px":0.0,"ca":0.0,"tt":52.0,"np":81,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-08-12","am":"2025-08","fi":"Estoril","cu":"Tarde da benção","dn":47.0,"px":0.0,"ca":0.0,"tt":48.0,"np":62,"pr":"Pr Pedro Daniel","of":"Rafael Ribeiro"},{"dt":"2025-08-13","am":"2025-08","fi":"Estoril","cu":"Quarta Profética","dn":1811.0,"px":15759.0,"ca":0.0,"tt":17571.1,"np":600,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-08-14","am":"2025-08","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":598.0,"px":4926.0,"ca":0.0,"tt":5524.0,"np":353,"pr":"Pr Pedro Daniel","of":""},{"dt":"2025-08-14","am":"2025-08","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":468.0,"px":0.0,"ca":0.0,"tt":468.0,"np":0,"pr":"","of":""},{"dt":"2025-08-17","am":"2025-08","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1058.0,"px":29458.0,"ca":0.0,"tt":30517.7,"np":523,"pr":"Pr Pedro Daniel","of":"Rafael Ribeiro"},{"dt":"2025-08-17","am":"2025-08","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":105.0,"px":7518.0,"ca":0.0,"tt":7623.0,"np":321,"pr":"Pr Pedro Daniel","of":"Pr. Roge"},{"dt":"2025-08-17","am":"2025-08","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1062.0,"px":12084.0,"ca":0.0,"tt":13146.0,"np":480,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-08-17","am":"2025-08","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":704.0,"px":5161.0,"ca":0.0,"tt":5865.0,"np":178,"pr":"Pr. Marco Laviola","of":""},{"dt":"2025-08-17","am":"2025-08","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":740.0,"px":2753.0,"ca":0.0,"tt":3494.0,"np":172,"pr":"Pr. Marco Laviola","of":""},{"dt":"2025-08-18","am":"2025-08","fi":"Estoril","cu":"Homens H2O","dn":430.0,"px":0.0,"ca":0.0,"tt":430.0,"np":631,"pr":"Pr Pedro Daniel","of":""},{"dt":"2025-08-18","am":"2025-08","fi":"Pará de Minas","cu":"Influenciadoras Pará de Minas","dn":500.0,"px":0.0,"ca":0.0,"tt":500.0,"np":0,"pr":"","of":""},{"dt":"2025-08-19","am":"2025-08","fi":"Estoril","cu":"Tarde da benção","dn":38.0,"px":0.0,"ca":0.0,"tt":38.0,"np":62,"pr":"","of":""},{"dt":"2025-08-20","am":"2025-08","fi":"Estoril","cu":"Quarta Profética","dn":828.0,"px":25356.0,"ca":0.0,"tt":26185.0,"np":631,"pr":"","of":""},{"dt":"2025-08-21","am":"2025-08","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":1111.0,"px":22559.0,"ca":0.0,"tt":23671.05,"np":907,"pr":"","of":""},{"dt":"2025-08-21","am":"2025-08","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":273.0,"px":0.0,"ca":0.0,"tt":273.0,"np":0,"pr":"","of":""},{"dt":"2025-08-24","am":"2025-08","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1649.0,"px":6057.0,"ca":0.0,"tt":7706.0,"np":317,"pr":"","of":""},{"dt":"2025-08-24","am":"2025-08","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1053.0,"px":12201.0,"ca":0.0,"tt":13254.0,"np":446,"pr":"","of":""},{"dt":"2025-08-24","am":"2025-08","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1110.0,"px":10401.0,"ca":0.0,"tt":11513.5,"np":515,"pr":"","of":""},{"dt":"2025-08-24","am":"2025-08","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":787.0,"px":9504.0,"ca":0.0,"tt":10291.0,"np":330,"pr":"","of":""},{"dt":"2025-08-24","am":"2025-08","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":104.0,"px":1692.0,"ca":0.0,"tt":1796.0,"np":194,"pr":"","of":""},{"dt":"2025-08-26","am":"2025-08","fi":"Estoril","cu":"Tarde da benção","dn":145.0,"px":0.0,"ca":0.0,"tt":147.0,"np":102,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-08-27","am":"2025-08","fi":"Estoril","cu":"Quarta Profética","dn":239.0,"px":9089.0,"ca":0.0,"tt":9328.0,"np":393,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-08-28","am":"2025-08","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":1075.0,"px":10436.0,"ca":0.0,"tt":11511.0,"np":575,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-08-30","am":"2025-08","fi":"Estoril","cu":"Culto Wake","dn":27.0,"px":0.0,"ca":0.0,"tt":27.5,"np":0,"pr":"","of":""},{"dt":"2025-08-31","am":"2025-08","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":605.0,"px":6820.0,"ca":0.0,"tt":7428.0,"np":492,"pr":"Pr Pedro Daniel","of":"Pr. Roge"},{"dt":"2025-08-31","am":"2025-08","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1221.0,"px":9919.0,"ca":0.0,"tt":11140.0,"np":415,"pr":"Pr. Rafael Belo","of":"Rodrigo Noronha"},{"dt":"2025-08-31","am":"2025-08","fi":"Estoril","cu":"Domingo Noite Estoril","dn":774.0,"px":9230.0,"ca":0.0,"tt":10006.5,"np":448,"pr":"Pr. Rafael Belo","of":"Pr. Gabriel Magalhães"},{"dt":"2025-08-31","am":"2025-08","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":154.0,"px":3677.0,"ca":0.0,"tt":3833.65,"np":188,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-08-31","am":"2025-08","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":261.0,"px":4711.0,"ca":0.0,"tt":4973.25,"np":380,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-09-01","am":"2025-09","fi":"Pará de Minas","cu":"Homens H2O Pará de Minas","dn":170.0,"px":0.0,"ca":0.0,"tt":170.0,"np":24,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-09-02","am":"2025-09","fi":"Estoril","cu":"Tarde da benção","dn":298.0,"px":0.0,"ca":0.0,"tt":299.0,"np":92,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-09-03","am":"2025-09","fi":"Estoril","cu":"Quarta Profética","dn":732.0,"px":20633.0,"ca":0.0,"tt":21369.3,"np":872,"pr":"Pr.Felipe Valadão","of":"Pr Pedro Daniel"},{"dt":"2025-09-04","am":"2025-09","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":2301.0,"px":17416.0,"ca":0.0,"tt":19717.0,"np":820,"pr":"Pr. Eduardo Gonçalves","of":"Pr Pedro Daniel"},{"dt":"2025-09-04","am":"2025-09","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":185.0,"px":442.0,"ca":0.0,"tt":627.0,"np":58,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-09-07","am":"2025-09","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2511.0,"px":29473.0,"ca":0.0,"tt":31988.0,"np":446,"pr":"Pr. Rafael Belo","of":"Rodrigo Andrade"},{"dt":"2025-09-07","am":"2025-09","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1614.0,"px":38698.0,"ca":0.0,"tt":40314.1,"np":473,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2025-09-07","am":"2025-09","fi":"Estoril","cu":"Domingo Noite Estoril","dn":2089.0,"px":20451.0,"ca":0.0,"tt":22541.0,"np":467,"pr":"Pr Pedro Daniel","of":"Jeziel"},{"dt":"2025-09-07","am":"2025-09","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":472.0,"px":10522.0,"ca":0.0,"tt":10994.0,"np":263,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-09-07","am":"2025-09","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":805.0,"px":2664.0,"ca":0.0,"tt":3469.0,"np":235,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-09-07","am":"2025-09","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":717.0,"px":5075.0,"ca":0.0,"tt":5794.0,"np":54,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-09-08","am":"2025-09","fi":"Estoril","cu":"Influênciadoras do Reino","dn":845.0,"px":0.0,"ca":0.0,"tt":845.0,"np":789,"pr":"Pra. Nina Silveira","of":"Pra Vanessa"},{"dt":"2025-09-09","am":"2025-09","fi":"Estoril","cu":"Tarde da benção","dn":88.0,"px":0.0,"ca":0.0,"tt":88.0,"np":86,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-09-10","am":"2025-09","fi":"Estoril","cu":"Quarta Profética","dn":1100.0,"px":16837.0,"ca":0.0,"tt":17937.0,"np":662,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-09-11","am":"2025-09","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":235.0,"px":0.0,"ca":0.0,"tt":235.0,"np":69,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-09-11","am":"2025-09","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":634.0,"px":5069.0,"ca":0.0,"tt":5703.0,"np":263,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-09-14","am":"2025-09","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":149.0,"px":2849.0,"ca":0.0,"tt":2998.0,"np":201,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-09-14","am":"2025-09","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":1506.0,"px":3027.0,"ca":0.0,"tt":4533.0,"np":202,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-09-14","am":"2025-09","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":190.0,"px":9962.0,"ca":0.0,"tt":10154.1,"np":341,"pr":"Pr. Lucas Bezalel","of":"Guilherme Lage"},{"dt":"2025-09-14","am":"2025-09","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":185.0,"px":28981.0,"ca":0.0,"tt":29167.0,"np":294,"pr":"Pr. Lucas Bezalel","of":"Rodrigo Noronha"},{"dt":"2025-09-14","am":"2025-09","fi":"Estoril","cu":"Domingo Noite Estoril","dn":568.0,"px":13017.0,"ca":0.0,"tt":13586.5,"np":620,"pr":"Pr. Rafael Belo","of":"Pr. Roge"},{"dt":"2025-09-15","am":"2025-09","fi":"Estoril","cu":"Homens H2O","dn":60.0,"px":0.0,"ca":0.0,"tt":60.0,"np":191,"pr":"Rodrigo Andrade","of":"Pr. Marco Laviola"},{"dt":"2025-09-16","am":"2025-09","fi":"Estoril","cu":"Tarde da benção","dn":223.0,"px":0.0,"ca":0.0,"tt":234.0,"np":85,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-09-17","am":"2025-09","fi":"Estoril","cu":"Quarta Profética","dn":1192.0,"px":20447.0,"ca":0.0,"tt":21640.0,"np":718,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-09-18","am":"2025-09","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":230.0,"px":0.0,"ca":0.0,"tt":230.0,"np":0,"pr":"","of":""},{"dt":"2025-09-18","am":"2025-09","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":0.0,"px":6881.0,"ca":0.0,"tt":6881.0,"np":468,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-09-18","am":"2025-09","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":0.0,"px":3187.44,"ca":0.0,"tt":3187.44,"np":63,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-09-21","am":"2025-09","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":276.0,"px":1673.0,"ca":0.0,"tt":1949.0,"np":143,"pr":"Pr. Marco Laviola","of":"Pr. Gabriel Magalhães"},{"dt":"2025-09-21","am":"2025-09","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":125.0,"px":11533.97,"ca":0.0,"tt":11658.97,"np":228,"pr":"Pr. Marco Laviola","of":"Rodrigo Andrade"},{"dt":"2025-09-21","am":"2025-09","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1574.0,"px":14450.2,"ca":0.0,"tt":16027.75,"np":485,"pr":"Pr Pedro Daniel","of":"Rafael Ribeiro"},{"dt":"2025-09-21","am":"2025-09","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":325.0,"px":4424.0,"ca":0.0,"tt":4749.0,"np":366,"pr":"Pr Pedro Daniel","of":"Pr Amarildo"},{"dt":"2025-09-21","am":"2025-09","fi":"Estoril","cu":"Domingo Noite Estoril","dn":491.0,"px":13260.21,"ca":0.0,"tt":13751.36,"np":411,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-09-23","am":"2025-09","fi":"Estoril","cu":"Tarde da benção","dn":126.0,"px":0.0,"ca":0.0,"tt":127.0,"np":70,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-09-24","am":"2025-09","fi":"Estoril","cu":"Quarta Profética","dn":1572.0,"px":14460.78,"ca":0.0,"tt":16034.33,"np":610,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-09-25","am":"2025-09","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":562.0,"px":9325.45,"ca":0.0,"tt":9889.6,"np":570,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-09-28","am":"2025-09","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":114.0,"px":0.0,"ca":0.0,"tt":114.0,"np":72,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-09-28","am":"2025-09","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":166.0,"px":1620.83,"ca":0.0,"tt":1786.83,"np":233,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-09-28","am":"2025-09","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":1628.0,"px":4755.98,"ca":0.0,"tt":6385.98,"np":376,"pr":"Pr. Lucas Bezalel","of":"Pr. Marco Laviola"},{"dt":"2025-09-28","am":"2025-09","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1609.0,"px":13910.42,"ca":0.0,"tt":15521.52,"np":556,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2025-09-28","am":"2025-09","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":826.0,"px":5687.95,"ca":0.0,"tt":6513.95,"np":276,"pr":"Pr. Rafael Ribeiro","of":"João Paulo"},{"dt":"2025-09-28","am":"2025-09","fi":"Estoril","cu":"Domingo Noite Estoril","dn":365.0,"px":4630.61,"ca":0.0,"tt":4996.61,"np":341,"pr":"Pr Marcus Paulo","of":"Rodrigo Andrade"},{"dt":"2025-09-30","am":"2025-09","fi":"Estoril","cu":"Tarde da benção","dn":123.0,"px":0.0,"ca":0.0,"tt":123.0,"np":91,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-10-01","am":"2025-10","fi":"Estoril","cu":"Quarta Profética","dn":652.0,"px":21505.68,"ca":0.0,"tt":22157.68,"np":648,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-10-02","am":"2025-10","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":503.0,"px":8391.24,"ca":0.0,"tt":8894.24,"np":0,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-10-02","am":"2025-10","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":0.0,"px":3005.03,"ca":0.0,"tt":3005.03,"np":0,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-10-05","am":"2025-10","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":874.0,"px":30205.44,"ca":0.0,"tt":31082.94,"np":464,"pr":"Pr. Rafael Belo","of":"Pr. Gabriel Magalhães"},{"dt":"2025-10-05","am":"2025-10","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1712.0,"px":82834.46,"ca":0.0,"tt":84546.46,"np":596,"pr":"Pr Pedro Daniel","of":"Jeziel"},{"dt":"2025-10-05","am":"2025-10","fi":"Estoril","cu":"Domingo Noite Estoril","dn":995.0,"px":17534.5,"ca":0.0,"tt":18532.5,"np":598,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-10-05","am":"2025-10","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":534.0,"px":6068.63,"ca":0.0,"tt":6602.63,"np":67,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-10-05","am":"2025-10","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":624.0,"px":9656.7,"ca":0.0,"tt":10280.7,"np":319,"pr":"Pr. Marco Laviola","of":"Guilherme Lage"},{"dt":"2025-10-05","am":"2025-10","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":284.0,"px":6574.0,"ca":0.0,"tt":6858.0,"np":245,"pr":"Pr. Marco Laviola","of":"Pr. Carlos Henrique"},{"dt":"2025-10-07","am":"2025-10","fi":"Estoril","cu":"Tarde da benção","dn":74.72,"px":0.0,"ca":0.0,"tt":74.72,"np":120,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-10-08","am":"2025-10","fi":"Estoril","cu":"Quarta Profética","dn":3114.0,"px":19968.0,"ca":0.0,"tt":23085.6,"np":647,"pr":"Pr Pedro Daniel","of":"Pr. Lucas Bezalel"},{"dt":"2025-10-09","am":"2025-10","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":831.0,"px":7127.35,"ca":0.0,"tt":7962.1,"np":439,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-10-09","am":"2025-10","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":465.0,"px":813.83,"ca":0.0,"tt":813.83,"np":64,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-10-11","am":"2025-10","fi":"Boulevard","cu":"Culto KIDS","dn":138.0,"px":0.0,"ca":0.0,"tt":165.85,"np":0,"pr":"","of":""},{"dt":"2025-10-12","am":"2025-10","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1123.0,"px":18663.86,"ca":0.0,"tt":19793.56,"np":391,"pr":"Pr Pedro Daniel","of":"Rafael Ribeiro"},{"dt":"2025-10-12","am":"2025-10","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2516.0,"px":12143.65,"ca":0.0,"tt":14659.65,"np":344,"pr":"Pr Pedro Daniel","of":"Pr Amarildo"},{"dt":"2025-10-12","am":"2025-10","fi":"Estoril","cu":"Domingo Noite Estoril","dn":132.0,"px":7209.12,"ca":0.0,"tt":7341.12,"np":372,"pr":"Pr Pedro Daniel","of":"Jairo"},{"dt":"2025-10-12","am":"2025-10","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":0.0,"px":0.0,"ca":0.0,"tt":0.0,"np":0,"pr":"","of":""},{"dt":"2025-10-12","am":"2025-10","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":323.0,"px":4257.62,"ca":0.0,"tt":4581.77,"np":253,"pr":"Pr. Rafael Belo","of":"Pr. Marco Laviola"},{"dt":"2025-10-12","am":"2025-10","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":695.0,"px":5784.58,"ca":0.0,"tt":6481.33,"np":315,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-10-14","am":"2025-10","fi":"Estoril","cu":"Tarde da benção","dn":43.0,"px":0.0,"ca":0.0,"tt":43.0,"np":81,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-10-15","am":"2025-10","fi":"Estoril","cu":"Quarta Profética","dn":1396.0,"px":11247.0,"ca":0.0,"tt":12644.45,"np":551,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-10-16","am":"2025-10","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":783.0,"px":6363.54,"ca":0.0,"tt":7146.54,"np":390,"pr":"Pr.Eliel","of":"Pr. Marco Laviola"},{"dt":"2025-10-16","am":"2025-10","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":174.0,"px":2075.2,"ca":0.0,"tt":2249.2,"np":68,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-10-19","am":"2025-10","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":562.0,"px":11068.22,"ca":0.0,"tt":11632.92,"np":371,"pr":"Pr. Hudson Meira","of":"Jairo"},{"dt":"2025-10-19","am":"2025-10","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":447.0,"px":10258.89,"ca":0.0,"tt":10705.89,"np":377,"pr":"Pr Pedro Daniel","of":"Pr Amarildo"},{"dt":"2025-10-19","am":"2025-10","fi":"Estoril","cu":"Domingo Noite Estoril","dn":905.0,"px":15774.62,"ca":0.0,"tt":16680.62,"np":412,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-10-19","am":"2025-10","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":489.0,"px":15719.18,"ca":0.0,"tt":16208.53,"np":405,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-10-19","am":"2025-10","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":140.0,"px":2948.62,"ca":0.0,"tt":3088.62,"np":234,"pr":"Pr. Marco Laviola","of":"Pr. Jefferson"},{"dt":"2025-10-20","am":"2025-10","fi":"Estoril","cu":"Homens H2O","dn":197.0,"px":0.0,"ca":0.0,"tt":197.0,"np":306,"pr":"Pr. Carlos Henrique","of":"Rodrigo Andrade"},{"dt":"2025-10-21","am":"2025-10","fi":"Estoril","cu":"Tarde da benção","dn":88.68,"px":0.0,"ca":0.0,"tt":88.68,"np":92,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-10-22","am":"2025-10","fi":"Estoril","cu":"Quarta Profética","dn":6006.0,"px":17823.77,"ca":0.0,"tt":23829.77,"np":778,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-10-23","am":"2025-10","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":144.0,"px":4556.08,"ca":0.0,"tt":4700.08,"np":70,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-10-23","am":"2025-10","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":563.0,"px":4249.0,"ca":0.0,"tt":4813.75,"np":486,"pr":"Pr Pedro Daniel","of":"Pr. Jefferson"},{"dt":"2025-10-26","am":"2025-10","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":824.0,"px":28275.43,"ca":0.0,"tt":29099.43,"np":495,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-10-26","am":"2025-10","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":559.0,"px":18184.42,"ca":0.0,"tt":18743.42,"np":474,"pr":"Pr Pedro Daniel","of":"Pr Amarildo"},{"dt":"2025-10-26","am":"2025-10","fi":"Estoril","cu":"Domingo Noite Estoril","dn":145.0,"px":9060.81,"ca":0.0,"tt":9205.81,"np":358,"pr":"Pr. Roge","of":"Pr. Roge"},{"dt":"2025-10-26","am":"2025-10","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":167.0,"px":2975.1,"ca":0.0,"tt":3142.1,"np":235,"pr":"Pr. Hudson Meira","of":"Rodrigo Andrade"},{"dt":"2025-10-26","am":"2025-10","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":334.0,"px":4816.48,"ca":0.0,"tt":5150.48,"np":434,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-10-27","am":"2025-10","fi":"Estoril","cu":"Influênciadoras do Reino","dn":565.0,"px":0.0,"ca":0.0,"tt":574.25,"np":574,"pr":"Pr. Viviane Santos","of":"Shara"},{"dt":"2025-10-28","am":"2025-10","fi":"Estoril","cu":"Tarde da benção","dn":303.77,"px":0.0,"ca":0.0,"tt":303.77,"np":86,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-10-29","am":"2025-10","fi":"Estoril","cu":"Quarta Profética","dn":333.0,"px":25324.1,"ca":0.0,"tt":25657.15,"np":675,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-10-30","am":"2025-10","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":0.0,"px":110.0,"ca":0.0,"tt":110.0,"np":49,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-10-30","am":"2025-10","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":375.0,"px":10599.59,"ca":0.0,"tt":10974.59,"np":353,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-10-31","am":"2025-10","fi":"Estoril","cu":"Culto Wake","dn":0.0,"px":0.0,"ca":0.0,"tt":0.0,"np":81,"pr":"Raone","of":"Raone"},{"dt":"2025-11-02","am":"2025-11","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1114.0,"px":27745.77,"ca":0.0,"tt":28862.27,"np":555,"pr":"Pr Pedro Daniel","of":"Pr. Lucas Bezalel"},{"dt":"2025-11-02","am":"2025-11","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1764.0,"px":27676.59,"ca":0.0,"tt":29442.09,"np":554,"pr":"Pr Pedro Daniel","of":"Pr. Gabriel Magalhães"},{"dt":"2025-11-02","am":"2025-11","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1130.69,"px":2952.35,"ca":0.0,"tt":4083.04,"np":432,"pr":"Pr Pedro Daniel","of":"João Paulo"},{"dt":"2025-11-02","am":"2025-11","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":1255.0,"px":7262.91,"ca":0.0,"tt":8517.91,"np":372,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-11-02","am":"2025-11","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":692.0,"px":3192.59,"ca":0.0,"tt":3884.59,"np":242,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-11-02","am":"2025-11","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":338.0,"px":5655.95,"ca":0.0,"tt":5993.95,"np":40,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-11-03","am":"2025-11","fi":"Boulevard","cu":"BN ACTION","dn":573.0,"px":6739.73,"ca":0.0,"tt":7315.28,"np":797,"pr":"Venceslau - angola","of":"Diogo Montalvão"},{"dt":"2025-11-04","am":"2025-11","fi":"Estoril","cu":"Tarde da benção","dn":213.0,"px":0.0,"ca":0.0,"tt":214.0,"np":73,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-11-05","am":"2025-11","fi":"Estoril","cu":"Quarta Profética","dn":819.0,"px":17374.79,"ca":0.0,"tt":18203.04,"np":562,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2025-11-06","am":"2025-11","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":1140.0,"px":8708.74,"ca":0.0,"tt":9853.24,"np":705,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-11-06","am":"2025-11","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":61.0,"px":2854.0,"ca":0.0,"tt":2915.0,"np":77,"pr":"Pr. Rafael Ribeiro","of":"Rafael Almeida"},{"dt":"2025-11-08","am":"2025-11","fi":"Estoril","cu":"Conferência IR","dn":1772.0,"px":73823.79,"ca":20000.0,"tt":95595.79,"np":420,"pr":"Pr Amarildo","of":"Rodrigo Noronha"},{"dt":"2025-11-09","am":"2025-11","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1293.0,"px":28750.31,"ca":0.0,"tt":30047.31,"np":396,"pr":"Pr. Joabe","of":"Sasa Toledo"},{"dt":"2025-11-09","am":"2025-11","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1208.0,"px":10329.88,"ca":0.0,"tt":11538.38,"np":473,"pr":"Pr. Rafael Ribeiro","of":"Pr. Roge"},{"dt":"2025-11-09","am":"2025-11","fi":"Estoril","cu":"Domingo Noite Estoril","dn":878.0,"px":4928.48,"ca":0.0,"tt":5806.48,"np":190,"pr":"Pr. Marco Laviola","of":"Rodrigo Andrade"},{"dt":"2025-11-09","am":"2025-11","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":372.0,"px":2130.88,"ca":0.0,"tt":2502.88,"np":176,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-11-09","am":"2025-11","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":46.0,"px":4928.48,"ca":0.0,"tt":4974.48,"np":176,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-11-11","am":"2025-11","fi":"Estoril","cu":"Tarde da benção","dn":132.0,"px":0.0,"ca":0.0,"tt":132.0,"np":84,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-11-12","am":"2025-11","fi":"Estoril","cu":"Quarta Profética","dn":627.0,"px":11751.53,"ca":0.0,"tt":12378.53,"np":662,"pr":"Pr. Rafael Belo","of":"Pr Pedro Daniel"},{"dt":"2025-11-13","am":"2025-11","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":801.0,"px":6675.29,"ca":0.0,"tt":7476.29,"np":531,"pr":"Pr Pedro Daniel","of":"Pr. Rafael Belo"},{"dt":"2025-11-13","am":"2025-11","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":526.0,"px":0.0,"ca":0.0,"tt":526.0,"np":74,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-11-15","am":"2025-11","fi":"Estoril","cu":"Vigília","dn":478.12,"px":0.0,"ca":0.0,"tt":478.12,"np":530,"pr":"Pr Pedro Daniel","of":""},{"dt":"2025-11-16","am":"2025-11","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2219.0,"px":22308.29,"ca":0.0,"tt":24543.29,"np":383,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-11-16","am":"2025-11","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":742.0,"px":19668.32,"ca":0.0,"tt":20410.32,"np":353,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-11-16","am":"2025-11","fi":"Estoril","cu":"Domingo Noite Estoril","dn":194.0,"px":10745.0,"ca":0.0,"tt":10940.25,"np":256,"pr":"Pr. Gabriel Magalhães","of":"Pr. Rafael Belo"},{"dt":"2025-11-16","am":"2025-11","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":227.0,"px":4463.67,"ca":0.0,"tt":4690.67,"np":211,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-11-16","am":"2025-11","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":248.5,"px":7438.0,"ca":0.0,"tt":7686.5,"np":335,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-11-17","am":"2025-11","fi":"Estoril","cu":"Homens H2O","dn":330.0,"px":0.0,"ca":0.0,"tt":330.0,"np":256,"pr":"Pr. Lucas Gonzales","of":"Rafael Almeida"},{"dt":"2025-11-18","am":"2025-11","fi":"Estoril","cu":"Tarde da benção","dn":128.0,"px":0.0,"ca":0.0,"tt":130.0,"np":71,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-11-19","am":"2025-11","fi":"Estoril","cu":"Quarta Profética","dn":1685.0,"px":17430.57,"ca":0.0,"tt":19118.87,"np":517,"pr":"Ap. Rogério Rocha","of":"Pr Pedro Daniel"},{"dt":"2025-11-20","am":"2025-11","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":302.0,"px":4603.17,"ca":0.0,"tt":4905.17,"np":442,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-11-20","am":"2025-11","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":104.0,"px":4603.17,"ca":0.0,"tt":4707.17,"np":62,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-11-22","am":"2025-11","fi":"Boulevard","cu":"Conferência de Células","dn":994.0,"px":13464.45,"ca":0.0,"tt":14459.4,"np":0,"pr":"","of":""},{"dt":"2025-11-23","am":"2025-11","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":525.0,"px":13694.77,"ca":0.0,"tt":14225.62,"np":345,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-11-23","am":"2025-11","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":240.0,"px":11108.2,"ca":0.0,"tt":11351.75,"np":438,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-11-23","am":"2025-11","fi":"Estoril","cu":"Domingo Noite Estoril","dn":513.0,"px":1040.55,"ca":0.0,"tt":1553.55,"np":240,"pr":"Pr. Hudson Meira","of":"Pr. Lucas Bezalel"},{"dt":"2025-11-23","am":"2025-11","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":645.0,"px":2848.14,"ca":0.0,"tt":3493.64,"np":235,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-11-23","am":"2025-11","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":410.0,"px":2311.28,"ca":0.0,"tt":2721.28,"np":253,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-11-25","am":"2025-11","fi":"Estoril","cu":"Tarde da benção","dn":119.0,"px":0.0,"ca":0.0,"tt":120.0,"np":73,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2025-11-26","am":"2025-11","fi":"Estoril","cu":"Quarta Profética","dn":0.0,"px":27624.95,"ca":0.0,"tt":27624.95,"np":578,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-11-27","am":"2025-11","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":576.0,"px":10219.36,"ca":0.0,"tt":10795.36,"np":510,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-11-27","am":"2025-11","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":0.0,"px":51905.0,"ca":0.0,"tt":51905.0,"np":56,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-11-30","am":"2025-11","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":219.0,"px":17333.73,"ca":0.0,"tt":17560.63,"np":393,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2025-11-30","am":"2025-11","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1662.0,"px":21794.44,"ca":0.0,"tt":23456.44,"np":398,"pr":"Pr Pedro Daniel","of":"João Paulo"},{"dt":"2025-11-30","am":"2025-11","fi":"Estoril","cu":"Domingo Noite Estoril","dn":771.0,"px":10459.31,"ca":0.0,"tt":11230.31,"np":346,"pr":"Pr. Rafael Belo","of":"Pr. Roge"},{"dt":"2025-11-30","am":"2025-11","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":139.0,"px":4405.0,"ca":0.0,"tt":4544.0,"np":245,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-11-30","am":"2025-11","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":302.0,"px":10459.31,"ca":0.0,"tt":10764.46,"np":370,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2025-12-02","am":"2025-12","fi":"Estoril","cu":"Tarde da benção","dn":339.0,"px":0.0,"ca":0.0,"tt":339.0,"np":43,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-12-03","am":"2025-12","fi":"Estoril","cu":"Quarta Profética","dn":932.0,"px":44359.7,"ca":0.0,"tt":45291.7,"np":576,"pr":"Pr. Hudson Meira","of":"Pr Pedro Daniel"},{"dt":"2025-12-04","am":"2025-12","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":2262.0,"px":12224.82,"ca":0.0,"tt":14487.37,"np":434,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-12-04","am":"2025-12","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":364.0,"px":545.0,"ca":0.0,"tt":909.0,"np":55,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-12-07","am":"2025-12","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":630.0,"px":41493.69,"ca":0.0,"tt":42125.69,"np":431,"pr":"Pr. Rafael Belo","of":"Pr. Rafael Belo"},{"dt":"2025-12-07","am":"2025-12","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1235.0,"px":24413.81,"ca":0.0,"tt":25648.81,"np":296,"pr":"Pr. Rafael Belo","of":"Pr. Rafael Belo"},{"dt":"2025-12-07","am":"2025-12","fi":"Estoril","cu":"Domingo Noite Estoril","dn":238.0,"px":18027.4,"ca":0.0,"tt":18265.4,"np":345,"pr":"Pr. Rafael Belo","of":"Pr. Rafael Belo"},{"dt":"2025-12-07","am":"2025-12","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":244.0,"px":5968.8,"ca":0.0,"tt":6212.9,"np":262,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-12-07","am":"2025-12","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":2229.0,"px":25835.41,"ca":0.0,"tt":28065.41,"np":750,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-12-07","am":"2025-12","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":363.0,"px":5420.0,"ca":0.0,"tt":5786.5,"np":52,"pr":"Pr. Rafael Ribeiro","of":"Bruno César"},{"dt":"2025-12-08","am":"2025-12","fi":"Boulevard","cu":"BN ACTION","dn":150.0,"px":0.0,"ca":0.0,"tt":150.2,"np":303,"pr":"Marquinho Malaquias","of":"Diogo Montalvão"},{"dt":"2025-12-09","am":"2025-12","fi":"Estoril","cu":"Tarde da benção","dn":88.0,"px":0.0,"ca":0.0,"tt":88.0,"np":64,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2025-12-10","am":"2025-12","fi":"Estoril","cu":"Quarta Profética","dn":1330.0,"px":34949.44,"ca":0.0,"tt":36279.44,"np":470,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-12-11","am":"2025-12","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":282.0,"px":3500.0,"ca":0.0,"tt":3782.75,"np":58,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-12-11","am":"2025-12","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":1453.57,"px":7932.26,"ca":0.0,"tt":9385.83,"np":402,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-12-12","am":"2025-12","fi":"Estoril","cu":"Influênciadoras do Reino","dn":6.0,"px":0.0,"ca":0.0,"tt":6.0,"np":0,"pr":"","of":""},{"dt":"2025-12-14","am":"2025-12","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":295.0,"px":6674.03,"ca":0.0,"tt":6969.73,"np":235,"pr":"Pr Marcus Paulo","of":"Pr. Marco Laviola"},{"dt":"2025-12-14","am":"2025-12","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":166.0,"px":4020.63,"ca":0.0,"tt":4186.63,"np":170,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-12-14","am":"2025-12","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":990.0,"px":17457.23,"ca":0.0,"tt":18452.23,"np":483,"pr":"Pr. Rafael Ribeiro","of":"Pr Pedro Daniel"},{"dt":"2025-12-14","am":"2025-12","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2279.0,"px":23959.79,"ca":0.0,"tt":26238.79,"np":368,"pr":"Pr. Rafael Ribeiro","of":"Pr Pedro Daniel"},{"dt":"2025-12-14","am":"2025-12","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1715.0,"px":7817.66,"ca":0.0,"tt":9532.66,"np":248,"pr":"Rodrigo Andrade","of":"Pr Pedro Daniel"},{"dt":"2025-12-15","am":"2025-12","fi":"Estoril","cu":"Homens H2O","dn":130.0,"px":0.0,"ca":0.0,"tt":130.0,"np":0,"pr":"","of":""},{"dt":"2025-12-16","am":"2025-12","fi":"Estoril","cu":"Tarde da benção","dn":87.0,"px":0.0,"ca":0.0,"tt":87.0,"np":0,"pr":"","of":""},{"dt":"2025-12-17","am":"2025-12","fi":"Estoril","cu":"Quarta Profética","dn":2686.0,"px":18134.99,"ca":0.0,"tt":20821.74,"np":431,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-12-18","am":"2025-12","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":1439.0,"px":9452.65,"ca":0.0,"tt":10893.65,"np":353,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-12-18","am":"2025-12","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":200.0,"px":3441.55,"ca":0.0,"tt":3642.9,"np":390,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-12-19","am":"2025-12","fi":"Pará de Minas","cu":"Culto Sexta Profética","dn":350.0,"px":3371.61,"ca":0.0,"tt":3723.11,"np":0,"pr":"","of":""},{"dt":"2025-12-21","am":"2025-12","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":606.0,"px":6322.84,"ca":0.0,"tt":6930.94,"np":532,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-12-21","am":"2025-12","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":134.0,"px":3912.1,"ca":0.0,"tt":4046.6,"np":204,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-12-21","am":"2025-12","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":960.0,"px":13165.76,"ca":0.0,"tt":14126.31,"np":315,"pr":"Pr. Lucas Bezalel","of":"Rodrigo Noronha"},{"dt":"2025-12-21","am":"2025-12","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2109.0,"px":8791.19,"ca":0.0,"tt":10900.19,"np":408,"pr":"Pr Pedro Daniel","of":"Pr. Rafael Belo"},{"dt":"2025-12-21","am":"2025-12","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1816.0,"px":10871.96,"ca":0.0,"tt":12687.96,"np":620,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-12-21","am":"2025-12","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":270.0,"px":1706.0,"ca":0.0,"tt":1978.0,"np":163,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-12-23","am":"2025-12","fi":"Estoril","cu":"Tarde da benção","dn":122.0,"px":0.0,"ca":0.0,"tt":122.0,"np":0,"pr":"","of":""},{"dt":"2025-12-24","am":"2025-12","fi":"Estoril","cu":"Quarta Profética","dn":883.0,"px":3303.56,"ca":0.0,"tt":4188.11,"np":202,"pr":"Pr. Roge","of":"Pr. Roge"},{"dt":"2025-12-25","am":"2025-12","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":114.0,"px":1224.0,"ca":0.0,"tt":1338.0,"np":236,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-12-25","am":"2025-12","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":594.0,"px":854.0,"ca":0.0,"tt":1448.0,"np":75,"pr":"Pr. Rafael Ribeiro","of":"Pr Marcus Paulo"},{"dt":"2025-12-28","am":"2025-12","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":66.0,"px":4961.97,"ca":0.0,"tt":5029.47,"np":200,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-12-28","am":"2025-12","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":0.0,"px":1860.4,"ca":0.0,"tt":1860.4,"np":241,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-12-28","am":"2025-12","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1517.0,"px":12257.57,"ca":0.0,"tt":13779.82,"np":382,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2025-12-28","am":"2025-12","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2362.0,"px":18375.81,"ca":0.0,"tt":20737.81,"np":402,"pr":"Pr Pedro Daniel","of":"Pr Amarildo"},{"dt":"2025-12-28","am":"2025-12","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1141.0,"px":9989.4,"ca":0.0,"tt":11130.4,"np":472,"pr":"Pr Pedro Daniel","of":"Jeziel"},{"dt":"2025-12-28","am":"2025-12","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":3152.41,"ca":0.0,"tt":3152.41,"np":0,"pr":"","of":""},{"dt":"2025-12-28","am":"2025-12","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":452.0,"px":1420.0,"ca":0.0,"tt":1872.0,"np":163,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2025-12-31","am":"2025-12","fi":"Estoril","cu":"Culto da virada Manhã","dn":3708.55,"px":30519.01,"ca":0.0,"tt":34237.11,"np":338,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-12-31","am":"2025-12","fi":"Boulevard","cu":"Culto da virada Manhã","dn":712.0,"px":6622.74,"ca":0.0,"tt":7336.74,"np":278,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2025-12-31","am":"2025-12","fi":"Estoril","cu":"Culto da virada Tarde","dn":3821.0,"px":56045.57,"ca":0.0,"tt":59869.57,"np":565,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-12-31","am":"2025-12","fi":"Estoril","cu":"Culto da virada Noite","dn":16650.0,"px":65942.63,"ca":0.0,"tt":82602.43,"np":1200,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2025-12-31","am":"2025-12","fi":"Boulevard","cu":"Culto da virada Noite","dn":8556.0,"px":22785.84,"ca":0.0,"tt":31355.54,"np":1000,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-01-04","am":"2026-01","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":70.0,"px":7788.6,"ca":0.0,"tt":7858.6,"np":150,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-01-04","am":"2026-01","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":2070.0,"px":4391.29,"ca":0.0,"tt":6461.29,"np":290,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-01-04","am":"2026-01","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":968.0,"px":21212.87,"ca":0.0,"tt":22189.37,"np":331,"pr":"João Paulo","of":"Pr Amarildo"},{"dt":"2026-01-04","am":"2026-01","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":411.0,"px":14049.07,"ca":0.0,"tt":14460.77,"np":502,"pr":"Rodrigo Andrade","of":"Pr. Rafael Belo"},{"dt":"2026-01-04","am":"2026-01","fi":"Estoril","cu":"Domingo Noite Estoril","dn":392.0,"px":13251.48,"ca":0.0,"tt":13643.48,"np":493,"pr":"Jeziel","of":"Pr. Rafael Belo"},{"dt":"2026-01-04","am":"2026-01","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":914.0,"ca":0.0,"tt":914.0,"np":0,"pr":"","of":""},{"dt":"2026-01-04","am":"2026-01","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":672.0,"px":3847.0,"ca":0.0,"tt":4519.0,"np":81,"pr":"Pr. Rafael Ribeiro","of":"Bruno César"},{"dt":"2026-01-05","am":"2026-01","fi":"Pará de Minas","cu":"Homens H2O Para de Minas","dn":288.0,"px":0.0,"ca":0.0,"tt":288.0,"np":0,"pr":"","of":""},{"dt":"2026-01-07","am":"2026-01","fi":"Estoril","cu":"Quarta Profética","dn":1469.0,"px":23456.0,"ca":0.0,"tt":24926.25,"np":775,"pr":"Pr Pedro Daniel","of":"Pr. Lucas Gomes"},{"dt":"2026-01-07","am":"2026-01","fi":"Montes Claros","cu":"Quarta Profética Montes Claros","dn":0.0,"px":2119.5,"ca":0.0,"tt":2119.5,"np":0,"pr":"","of":""},{"dt":"2026-01-08","am":"2026-01","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":1136.0,"px":10585.44,"ca":0.0,"tt":11721.44,"np":165,"pr":"Pr. Hudson Meira","of":"Rafael Ribeiro"},{"dt":"2026-01-08","am":"2026-01","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":1237.0,"px":3651.1,"ca":0.0,"tt":4888.1,"np":470,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-01-11","am":"2026-01","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":437.0,"px":5065.68,"ca":0.0,"tt":5502.68,"np":276,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-01-11","am":"2026-01","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":319.0,"px":3757.43,"ca":0.0,"tt":4076.43,"np":300,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-01-11","am":"2026-01","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":749.0,"px":19080.89,"ca":0.0,"tt":19829.89,"np":415,"pr":"Pr. Jefferson","of":"Diogo Montalvão"},{"dt":"2026-01-11","am":"2026-01","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1289.0,"px":8354.43,"ca":0.0,"tt":9643.43,"np":367,"pr":"Pr Amarildo","of":"Pr Marcus Paulo"},{"dt":"2026-01-11","am":"2026-01","fi":"Estoril","cu":"Domingo Noite Estoril","dn":2090.0,"px":9588.67,"ca":0.0,"tt":11678.67,"np":375,"pr":"Pr. Hudson Meira","of":"Jairo"},{"dt":"2026-01-11","am":"2026-01","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":2749.5,"ca":0.0,"tt":2749.5,"np":0,"pr":"","of":""},{"dt":"2026-01-11","am":"2026-01","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":452.0,"px":2851.54,"ca":0.0,"tt":3303.54,"np":112,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2026-01-13","am":"2026-01","fi":"Estoril","cu":"Mesa e Legado","dn":362.0,"px":0.0,"ca":0.0,"tt":362.0,"np":200,"pr":"Gustavo Souza","of":"Varios testemunhos"},{"dt":"2026-01-14","am":"2026-01","fi":"Estoril","cu":"Quarta Profética","dn":137.0,"px":8168.75,"ca":0.0,"tt":8311.25,"np":610,"pr":"Jeziel","of":"Pr. Rogério Barros"},{"dt":"2026-01-15","am":"2026-01","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":1230.0,"px":3541.48,"ca":0.0,"tt":4771.48,"np":530,"pr":"Pr. Rogério Barros","of":"Pr. Marco Laviola"},{"dt":"2026-01-15","am":"2026-01","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":1372.0,"px":2495.24,"ca":0.0,"tt":3867.24,"np":179,"pr":"Pr Marcus Paulo","of":"Rafael Ribeiro"},{"dt":"2026-01-18","am":"2026-01","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":467.0,"px":3179.2,"ca":0.0,"tt":3646.2,"np":214,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-01-18","am":"2026-01","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":1004.0,"px":2709.89,"ca":0.0,"tt":3714.39,"np":263,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-01-18","am":"2026-01","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":925.0,"px":12832.43,"ca":0.0,"tt":13760.03,"np":445,"pr":"João Paulo","of":"Pr Pedro Daniel"},{"dt":"2026-01-18","am":"2026-01","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1896.0,"px":14613.71,"ca":0.0,"tt":16512.71,"np":485,"pr":"Pr Amarildo","of":"Pr Pedro Daniel"},{"dt":"2026-01-18","am":"2026-01","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1332.26,"px":10155.5,"ca":0.0,"tt":11487.76,"np":575,"pr":"Pr. Rafael Belo","of":"Pr Pedro Daniel"},{"dt":"2026-01-18","am":"2026-01","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":1055.75,"ca":0.0,"tt":1055.75,"np":0,"pr":"","of":""},{"dt":"2026-01-18","am":"2026-01","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":834.0,"px":5023.3,"ca":0.0,"tt":5857.85,"np":114,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2026-01-19","am":"2026-01","fi":"Estoril","cu":"Homens H2O","dn":408.0,"px":0.0,"ca":0.0,"tt":408.0,"np":237,"pr":"Pr. Rafael Belo","of":"Guilherme Lage"},{"dt":"2026-01-20","am":"2026-01","fi":"Estoril","cu":"Tarde da benção","dn":42.0,"px":0.0,"ca":0.0,"tt":44.45,"np":82,"pr":"Pr Amarildo","of":"Pra. Camila"},{"dt":"2026-01-21","am":"2026-01","fi":"Estoril","cu":"Quarta Profética","dn":3064.0,"px":34060.35,"ca":0.0,"tt":37126.5,"np":793,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-01-22","am":"2026-01","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":574.0,"px":6326.83,"ca":0.0,"tt":6900.83,"np":91,"pr":"Pr. Rafael Ribeiro","of":"Rafael Ribeiro"},{"dt":"2026-01-22","am":"2026-01","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":119.0,"px":1862.12,"ca":0.0,"tt":1981.12,"np":502,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-01-25","am":"2026-01","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":392.0,"px":3418.9,"ca":0.0,"tt":3816.2,"np":278,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-01-25","am":"2026-01","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":455.0,"px":0.0,"ca":0.0,"tt":455.0,"np":255,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-01-25","am":"2026-01","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2685.0,"px":40986.83,"ca":0.0,"tt":43672.08,"np":654,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-01-25","am":"2026-01","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":3515.0,"px":6764.1,"ca":0.0,"tt":10279.1,"np":407,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-01-25","am":"2026-01","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1541.0,"px":0.0,"ca":0.0,"tt":1542.5,"np":416,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-01-25","am":"2026-01","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":1427.06,"ca":0.0,"tt":1427.06,"np":0,"pr":"","of":""},{"dt":"2026-01-25","am":"2026-01","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":261.0,"px":1005.48,"ca":0.0,"tt":1269.18,"np":116,"pr":"Pr. Rafael Ribeiro","of":"Bruno César"},{"dt":"2026-01-28","am":"2026-01","fi":"Estoril","cu":"Quarta Profética","dn":1606.0,"px":19371.69,"ca":0.0,"tt":20981.29,"np":994,"pr":"Pr. Viviane Santos","of":"Pra. Camila"},{"dt":"2026-01-28","am":"2026-01","fi":"Montes Claros","cu":"Quarta Profética Montes Claros","dn":0.0,"px":2141.8,"ca":0.0,"tt":2141.8,"np":0,"pr":"","of":""},{"dt":"2026-01-29","am":"2026-01","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":229.0,"px":9826.46,"ca":0.0,"tt":10055.46,"np":989,"pr":"Pr Pedro Daniel","of":"Pr. Raique Carmelo"},{"dt":"2026-01-29","am":"2026-01","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":505.0,"px":9825.59,"ca":0.0,"tt":10330.59,"np":165,"pr":"Pr. Viviane Santos","of":"Rafael Ribeiro"},{"dt":"2026-02-01","am":"2026-02","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":249.0,"px":10312.56,"ca":0.0,"tt":10561.56,"np":328,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-02-01","am":"2026-02","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":225.0,"px":5254.72,"ca":0.0,"tt":5479.72,"np":331,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-02-01","am":"2026-02","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2342.0,"px":26786.97,"ca":0.0,"tt":29131.02,"np":583,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-02-01","am":"2026-02","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2263.0,"px":19456.96,"ca":0.0,"tt":21723.01,"np":543,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-02-01","am":"2026-02","fi":"Estoril","cu":"Domingo Noite Estoril","dn":912.0,"px":14043.23,"ca":0.0,"tt":14956.73,"np":525,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-02-01","am":"2026-02","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":545.0,"ca":0.0,"tt":545.0,"np":0,"pr":"","of":""},{"dt":"2026-02-01","am":"2026-02","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":4009.0,"px":10275.68,"ca":0.0,"tt":14285.68,"np":141,"pr":"Rafael Melo","of":"Bruno César"},{"dt":"2026-02-02","am":"2026-02","fi":"Boulevard","cu":"Culto Segunda  Boulevard","dn":124.0,"px":3110.54,"ca":0.0,"tt":3234.74,"np":0,"pr":"","of":""},{"dt":"2026-02-02","am":"2026-02","fi":"Pará de Minas","cu":"Homens H2O Pará de Minas","dn":725.0,"px":0.0,"ca":0.0,"tt":725.0,"np":75,"pr":"Digol","of":"Rafael Almeida"},{"dt":"2026-02-02","am":"2026-02","fi":"Pará de Minas","cu":"Culto Action PARÁ DE MINAS","dn":0.0,"px":2045.55,"ca":0.0,"tt":2045.55,"np":240,"pr":"Eduardo Shoroeder","of":"Guilherme Lage"},{"dt":"2026-02-03","am":"2026-02","fi":"Estoril","cu":"Tarde da benção","dn":130.0,"px":0.0,"ca":0.0,"tt":132.5,"np":69,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2026-02-04","am":"2026-02","fi":"Estoril","cu":"Quarta Profética","dn":1154.0,"px":25618.37,"ca":0.0,"tt":26774.47,"np":1176,"pr":"Pr. Raique Carmelo","of":"Pr Pedro Daniel"},{"dt":"2026-02-04","am":"2026-02","fi":"Montes Claros","cu":"Quarta Profética Montes Claros","dn":0.0,"px":3511.92,"ca":0.0,"tt":3511.92,"np":0,"pr":"","of":""},{"dt":"2026-02-05","am":"2026-02","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":1740.0,"px":3113.73,"ca":0.0,"tt":4853.73,"np":141,"pr":"Pr. Roge","of":"Pr. Rafael Ribeiro"},{"dt":"2026-02-05","am":"2026-02","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":601.0,"px":8899.47,"ca":0.0,"tt":9502.72,"np":465,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2026-02-08","am":"2026-02","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":780.0,"px":8461.89,"ca":0.0,"tt":9241.89,"np":210,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-02-08","am":"2026-02","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":835.0,"px":7412.17,"ca":0.0,"tt":8247.22,"np":207,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2026-02-08","am":"2026-02","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":15294.0,"px":31294.24,"ca":0.0,"tt":46588.94,"np":533,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2026-02-08","am":"2026-02","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":974.0,"px":11886.26,"ca":0.0,"tt":12860.26,"np":327,"pr":"Pr Pedro Daniel","of":"João Paulo"},{"dt":"2026-02-08","am":"2026-02","fi":"Estoril","cu":"Domingo Noite Estoril","dn":322.0,"px":12756.78,"ca":0.0,"tt":13078.78,"np":264,"pr":"Pr. Hudson Meira","of":"Pr. Carlos Henrique"},{"dt":"2026-02-08","am":"2026-02","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":1678.0,"ca":0.0,"tt":1678.0,"np":0,"pr":"","of":""},{"dt":"2026-02-08","am":"2026-02","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":230.0,"px":3889.97,"ca":0.0,"tt":4119.97,"np":129,"pr":"Pr. Rafael Ribeiro","of":"Pr Amarildo"},{"dt":"2026-02-09","am":"2026-02","fi":"Pedro Leopoldo","cu":"Influenciadoras Pedro Leopoldo","dn":0.0,"px":2575.47,"ca":0.0,"tt":2575.47,"np":0,"pr":"","of":""},{"dt":"2026-02-09","am":"2026-02","fi":"Estoril","cu":"Influênciadoras do Reino","dn":675.0,"px":7509.67,"ca":0.0,"tt":8184.67,"np":473,"pr":"Pra Kelle","of":"Sasa Toledo"},{"dt":"2026-02-10","am":"2026-02","fi":"Estoril","cu":"Tarde da benção","dn":481.0,"px":0.0,"ca":0.0,"tt":481.0,"np":85,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2026-02-11","am":"2026-02","fi":"Estoril","cu":"Quarta Profética","dn":2921.0,"px":14153.0,"ca":0.0,"tt":17076.0,"np":772,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-02-11","am":"2026-02","fi":"Montes Claros","cu":"Quarta Profética MOC","dn":0.0,"px":530.0,"ca":0.0,"tt":530.0,"np":0,"pr":"","of":""},{"dt":"2026-02-12","am":"2026-02","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":1440.0,"px":1448.49,"ca":0.0,"tt":2888.49,"np":106,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-02-12","am":"2026-02","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":867.0,"px":11397.41,"ca":0.0,"tt":12265.51,"np":517,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2026-02-15","am":"2026-02","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":412.0,"px":7550.72,"ca":0.0,"tt":7962.72,"np":132,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-02-15","am":"2026-02","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":75.0,"px":1111.63,"ca":0.0,"tt":1187.63,"np":124,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-02-15","am":"2026-02","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":509.0,"px":9354.67,"ca":0.0,"tt":9867.07,"np":395,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-02-15","am":"2026-02","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2146.0,"px":6097.66,"ca":0.0,"tt":8243.66,"np":324,"pr":"Pr Pedro Daniel","of":"Pr Amarildo"},{"dt":"2026-02-15","am":"2026-02","fi":"Estoril","cu":"Domingo Noite Estoril","dn":404.0,"px":5536.37,"ca":0.0,"tt":5940.37,"np":290,"pr":"Pr. Roge","of":"Pr. Roge"},{"dt":"2026-02-15","am":"2026-02","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":1552.0,"ca":0.0,"tt":1552.0,"np":0,"pr":"","of":""},{"dt":"2026-02-15","am":"2026-02","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":479.0,"px":2294.0,"ca":0.0,"tt":2773.0,"np":98,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-02-17","am":"2026-02","fi":"Estoril","cu":"ESCOLA DE PROFETAS","dn":1039.0,"px":23651.32,"ca":0.0,"tt":24693.37,"np":0,"pr":"","of":""},{"dt":"2026-02-18","am":"2026-02","fi":"Estoril","cu":"Quarta Profética","dn":1337.0,"px":28382.1,"ca":0.0,"tt":29723.6,"np":817,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2026-02-19","am":"2026-02","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":899.0,"px":2695.7,"ca":0.0,"tt":3594.7,"np":122,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-02-19","am":"2026-02","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":797.0,"px":5288.94,"ca":0.0,"tt":6093.44,"np":512,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2026-02-22","am":"2026-02","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":480.0,"px":4124.08,"ca":0.0,"tt":4604.08,"np":253,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-02-22","am":"2026-02","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":159.0,"px":3724.77,"ca":0.0,"tt":3885.02,"np":247,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-02-22","am":"2026-02","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1613.0,"px":28903.8,"ca":0.0,"tt":30518.45,"np":602,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2026-02-22","am":"2026-02","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1259.0,"px":7829.25,"ca":0.0,"tt":9088.75,"np":421,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2026-02-22","am":"2026-02","fi":"Estoril","cu":"Domingo Noite Estoril","dn":598.0,"px":10076.99,"ca":0.0,"tt":10674.99,"np":387,"pr":"Pr Pedro Daniel","of":"Rodrigo Noronha"},{"dt":"2026-02-22","am":"2026-02","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":3746.85,"ca":0.0,"tt":3746.85,"np":0,"pr":"","of":""},{"dt":"2026-02-22","am":"2026-02","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":672.0,"px":1989.48,"ca":0.0,"tt":2661.48,"np":143,"pr":"Pr. Rafael Ribeiro","of":"Rafael Melo"},{"dt":"2026-02-23","am":"2026-02","fi":"Pará de Minas","cu":"Influenciadoras Pará de Minas","dn":145.0,"px":0.0,"ca":0.0,"tt":145.0,"np":85,"pr":"Pra Kelle","of":"Pr. Lara Ribeiro"},{"dt":"2026-02-24","am":"2026-02","fi":"Estoril","cu":"Tarde da benção","dn":641.0,"px":0.0,"ca":0.0,"tt":641.0,"np":75,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2026-02-25","am":"2026-02","fi":"Estoril","cu":"Quarta Profética","dn":1231.0,"px":43613.85,"ca":0.0,"tt":44844.85,"np":719,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-02-25","am":"2026-02","fi":"Montes Claros","cu":"Quarta Profética MOC","dn":0.0,"px":637.78,"ca":0.0,"tt":637.78,"np":0,"pr":"","of":""},{"dt":"2026-02-26","am":"2026-02","fi":"Estoril","cu":"Vigília","dn":123.0,"px":0.0,"ca":0.0,"tt":123.0,"np":0,"pr":"","of":""},{"dt":"2026-02-26","am":"2026-02","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":276.0,"px":8074.39,"ca":9000.0,"tt":17350.39,"np":446,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-02-26","am":"2026-02","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":475.0,"px":1796.6,"ca":0.0,"tt":2271.6,"np":104,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-02-27","am":"2026-02","fi":"Estoril","cu":"Vigília","dn":123.0,"px":0.0,"ca":0.0,"tt":123.0,"np":0,"pr":"","of":""},{"dt":"2026-03-01","am":"2026-03","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":348.0,"px":11478.65,"ca":0.0,"tt":11826.75,"np":377,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-03-01","am":"2026-03","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":405.0,"px":8267.93,"ca":0.0,"tt":8672.93,"np":311,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-03-01","am":"2026-03","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2233.0,"px":21079.02,"ca":0.0,"tt":23313.02,"np":706,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-03-01","am":"2026-03","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":485.0,"px":14952.63,"ca":0.0,"tt":15438.63,"np":502,"pr":"Rodrigo Noronha","of":"Pr. Rafael Ribeiro"},{"dt":"2026-03-01","am":"2026-03","fi":"Estoril","cu":"Domingo Noite Estoril","dn":907.0,"px":5617.7,"ca":0.0,"tt":6524.7,"np":517,"pr":"Rodrigo Noronha","of":"Pr. Rafael Ribeiro"},{"dt":"2026-03-01","am":"2026-03","fi":"Montes Claros","cu":"Domingo Noite Montes Claros","dn":0.0,"px":2540.0,"ca":0.0,"tt":2540.0,"np":0,"pr":"","of":""},{"dt":"2026-03-01","am":"2026-03","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":809.0,"px":22979.39,"ca":0.0,"tt":23789.14,"np":192,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-03-01","am":"2026-03","fi":"Estoril","cu":"MURO FORTE 52 Domingo Manhã","dn":0.0,"px":7680.98,"ca":0.0,"tt":7680.98,"np":0,"pr":"","of":""},{"dt":"2026-03-01","am":"2026-03","fi":"Estoril","cu":"MURO FORTE 52 Domingo Tarde","dn":0.0,"px":12448.17,"ca":0.0,"tt":12448.17,"np":0,"pr":"","of":""},{"dt":"2026-03-01","am":"2026-03","fi":"Estoril","cu":"MURO FORTE 52 Domingo Noite","dn":0.0,"px":1724.64,"ca":0.0,"tt":1724.64,"np":0,"pr":"","of":""},{"dt":"2026-03-02","am":"2026-03","fi":"Pará de Minas","cu":"Homens H2O","dn":180.0,"px":0.0,"ca":0.0,"tt":180.0,"np":61,"pr":"Pr. Roge","of":"Rafael Almeida"},{"dt":"2026-03-03","am":"2026-03","fi":"Estoril","cu":"Tarde da benção","dn":277.0,"px":0.0,"ca":0.0,"tt":277.0,"np":96,"pr":"Pr. Roge","of":"Pr. Roge"},{"dt":"2026-03-04","am":"2026-03","fi":"Estoril","cu":"MURO FORTE 52  QUARTA PROFÉTICA","dn":0.0,"px":10642.46,"ca":0.0,"tt":10642.46,"np":0,"pr":"","of":""},{"dt":"2026-03-04","am":"2026-03","fi":"Estoril","cu":"Quarta Profética","dn":2287.0,"px":7191.42,"ca":0.0,"tt":9479.12,"np":780,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-03-05","am":"2026-03","fi":"Estoril","cu":"MURO FORTE 52  QUINTA PROFÉTICA","dn":0.0,"px":3740.75,"ca":0.0,"tt":3740.75,"np":0,"pr":"","of":""},{"dt":"2026-03-05","am":"2026-03","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":244.0,"px":7607.73,"ca":0.0,"tt":7851.73,"np":520,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-03-05","am":"2026-03","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":620.4,"px":2157.0,"ca":0.0,"tt":2777.8,"np":162,"pr":"","of":"Pr Marcus Paulo"},{"dt":"2026-03-07","am":"2026-03","fi":"Estoril","cu":"CONFERENCIA IR BOULEVARD","dn":1936.35,"px":29541.89,"ca":0.0,"tt":31481.84,"np":0,"pr":"","of":""},{"dt":"2026-03-08","am":"2026-03","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":1000.0,"px":8974.76,"ca":0.0,"tt":9974.76,"np":259,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-03-08","am":"2026-03","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":158.0,"px":3438.64,"ca":0.0,"tt":3596.64,"np":205,"pr":"Pr Pedro Daniel","of":"Pr Jackson Antônio"},{"dt":"2026-03-08","am":"2026-03","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2168.0,"px":40809.46,"ca":0.0,"tt":42977.46,"np":509,"pr":"Pr Pedro Daniel","of":"Pr. Rafael Belo"},{"dt":"2026-03-08","am":"2026-03","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":3080.0,"px":6938.18,"ca":0.0,"tt":10018.18,"np":291,"pr":"Pr Pedro Daniel","of":"Pr. Roge"},{"dt":"2026-03-08","am":"2026-03","fi":"Estoril","cu":"Domingo Noite Estoril","dn":740.0,"px":6032.14,"ca":0.0,"tt":6773.64,"np":223,"pr":"Pr. Marco Laviola","of":"Jeziel"},{"dt":"2026-03-08","am":"2026-03","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":5285.5,"ca":0.0,"tt":5285.5,"np":0,"pr":"","of":""},{"dt":"2026-03-08","am":"2026-03","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":386.0,"px":2570.6,"ca":0.0,"tt":2956.6,"np":131,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-03-08","am":"2026-03","fi":"Estoril","cu":"MURO FORTE 52 Domingo Manhã","dn":0.0,"px":4928.92,"ca":0.0,"tt":4928.92,"np":0,"pr":"","of":""},{"dt":"2026-03-08","am":"2026-03","fi":"Estoril","cu":"MURO FORTE 52 Domingo Noite","dn":0.0,"px":6213.19,"ca":0.0,"tt":6213.19,"np":0,"pr":"","of":""},{"dt":"2026-03-10","am":"2026-03","fi":"Estoril","cu":"Tarde da benção","dn":107.0,"px":0.0,"ca":0.0,"tt":107.0,"np":0,"pr":"","of":""},{"dt":"2026-03-11","am":"2026-03","fi":"Estoril","cu":"MURO FORTE 52  QUARTA PROFÉTICA","dn":0.0,"px":634.8,"ca":0.0,"tt":634.8,"np":0,"pr":"","of":""},{"dt":"2026-03-11","am":"2026-03","fi":"Estoril","cu":"Quarta Profética","dn":375.0,"px":11767.83,"ca":0.0,"tt":12142.83,"np":557,"pr":"Pr Pedro Daniel","of":"Pr. Diogo Maia"},{"dt":"2026-03-12","am":"2026-03","fi":"Estoril","cu":"MURO FORTE 52  QUINTA PROFÉTICA","dn":0.0,"px":1000.0,"ca":0.0,"tt":1000.0,"np":0,"pr":"","of":""},{"dt":"2026-03-12","am":"2026-03","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":3926.0,"px":4311.93,"ca":0.0,"tt":8240.78,"np":430,"pr":"Pr Pedro Daniel","of":"Pr. Diogo Maia"},{"dt":"2026-03-12","am":"2026-03","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":243.0,"px":2391.8,"ca":0.0,"tt":2634.8,"np":93,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-03-15","am":"2026-03","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":281.0,"px":6631.53,"ca":0.0,"tt":6912.53,"np":283,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-03-15","am":"2026-03","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":410.0,"px":6060.0,"ca":0.0,"tt":6470.0,"np":260,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-03-15","am":"2026-03","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":9977.0,"px":12202.58,"ca":0.0,"tt":22179.58,"np":446,"pr":"Pr Marcus Paulo","of":"Edson"},{"dt":"2026-03-15","am":"2026-03","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":470.0,"px":7892.03,"ca":0.0,"tt":8362.03,"np":466,"pr":"Pr. Diogo Maia","of":"Pr Amarildo"},{"dt":"2026-03-15","am":"2026-03","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1542.0,"px":22381.69,"ca":0.0,"tt":23923.69,"np":578,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-03-15","am":"2026-03","fi":"Montes Claros","cu":"Domingo Noite Montes Claros","dn":0.0,"px":1160.63,"ca":0.0,"tt":1160.63,"np":0,"pr":"","of":""},{"dt":"2026-03-15","am":"2026-03","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":1285.0,"px":2184.96,"ca":0.0,"tt":3469.96,"np":183,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-03-16","am":"2026-03","fi":"Estoril","cu":"Homens H2O","dn":240.0,"px":0.0,"ca":0.0,"tt":240.0,"np":0,"pr":"","of":""},{"dt":"2026-03-17","am":"2026-03","fi":"Estoril","cu":"Tarde da benção","dn":474.0,"px":0.0,"ca":0.0,"tt":474.0,"np":0,"pr":"","of":""},{"dt":"2026-03-18","am":"2026-03","fi":"Estoril","cu":"Quarta Profética","dn":2426.0,"px":15157.45,"ca":0.0,"tt":17585.45,"np":733,"pr":"Pr. Diogo Maia","of":"Pr Pedro Daniel"},{"dt":"2026-03-19","am":"2026-03","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":860.0,"px":9240.32,"ca":0.0,"tt":10102.32,"np":510,"pr":"Pr. Diogo Maia","of":"Pr Pedro Daniel"},{"dt":"2026-03-19","am":"2026-03","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":68.5,"px":2085.0,"ca":0.0,"tt":2153.5,"np":123,"pr":"Pr. Hudson Meira","of":"Pr. Hudson Meira"},{"dt":"2026-03-22","am":"2026-03","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":319.0,"px":2808.1,"ca":0.0,"tt":3127.1,"np":247,"pr":"Apostolo Valdir","of":"Pr. Marco Laviola"},{"dt":"2026-03-22","am":"2026-03","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":135.0,"px":8228.76,"ca":0.0,"tt":8363.76,"np":277,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-03-22","am":"2026-03","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1170.0,"px":19572.24,"ca":0.0,"tt":20744.24,"np":569,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-03-22","am":"2026-03","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":3027.0,"px":9124.98,"ca":0.0,"tt":12151.98,"np":353,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-03-22","am":"2026-03","fi":"Estoril","cu":"Domingo Noite Estoril","dn":222.0,"px":17160.4,"ca":0.0,"tt":17382.65,"np":460,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-03-22","am":"2026-03","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":1507.7,"ca":0.0,"tt":1507.7,"np":0,"pr":"","of":""},{"dt":"2026-03-22","am":"2026-03","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":1151.6,"px":1691.78,"ca":0.0,"tt":2843.38,"np":169,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-03-22","am":"2026-03","fi":"Estoril","cu":"MURO FORTE 52 Domingo","dn":0.0,"px":617.0,"ca":0.0,"tt":617.0,"np":0,"pr":"","of":""},{"dt":"2026-03-24","am":"2026-03","fi":"Estoril","cu":"Tarde da benção","dn":950.0,"px":0.0,"ca":0.0,"tt":950.0,"np":0,"pr":"","of":""},{"dt":"2026-03-25","am":"2026-03","fi":"Estoril","cu":"MURO FORTE 52  QUARTA PROFÉTICA","dn":0.0,"px":1225.0,"ca":0.0,"tt":1225.0,"np":0,"pr":"","of":""},{"dt":"2026-03-25","am":"2026-03","fi":"Estoril","cu":"Quarta Profética","dn":1316.0,"px":16953.91,"ca":0.0,"tt":18269.91,"np":695,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-03-26","am":"2026-03","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":1404.0,"px":7572.77,"ca":0.0,"tt":8976.77,"np":465,"pr":"Pr Marcus Paulo","of":"Pr. Rafael Ribeiro"},{"dt":"2026-03-26","am":"2026-03","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":475.0,"px":921.0,"ca":0.0,"tt":1396.0,"np":465,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-03-29","am":"2026-03","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":299.0,"px":5092.71,"ca":0.0,"tt":5391.71,"np":281,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-03-29","am":"2026-03","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":400.5,"px":2273.22,"ca":0.0,"tt":2673.72,"np":340,"pr":"Pr Pedro Daniel","of":"Pr. Marco Laviola"},{"dt":"2026-03-29","am":"2026-03","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1295.0,"px":15380.57,"ca":0.0,"tt":16678.57,"np":569,"pr":"Pr Pedro Daniel","of":"Pr. Diogo Maia"},{"dt":"2026-03-29","am":"2026-03","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1532.0,"px":9887.62,"ca":0.0,"tt":11419.62,"np":437,"pr":"Pr Pedro Daniel","of":"Pr Amarildo"},{"dt":"2026-03-29","am":"2026-03","fi":"Estoril","cu":"Domingo Noite Estoril","dn":1083.0,"px":6907.16,"ca":0.0,"tt":7990.16,"np":433,"pr":"Ev. Caio Cezar","of":"João Paulo"},{"dt":"2026-03-29","am":"2026-03","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":1645.76,"ca":0.0,"tt":1645.76,"np":0,"pr":"","of":""},{"dt":"2026-03-29","am":"2026-03","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":328.0,"px":911.45,"ca":0.0,"tt":1239.45,"np":135,"pr":"Pr. Rafael Ribeiro","of":"Paulo Marques"},{"dt":"2026-03-30","am":"2026-03","fi":"Pará de Minas","cu":"Influenciadoras Pará de Minas","dn":66.0,"px":0.0,"ca":0.0,"tt":66.0,"np":0,"pr":"","of":""},{"dt":"2026-03-31","am":"2026-03","fi":"Estoril","cu":"Tarde da benção","dn":474.0,"px":0.0,"ca":0.0,"tt":477.75,"np":0,"pr":"","of":""},{"dt":"2026-04-01","am":"2026-04","fi":"Estoril","cu":"MURO FORTE 52  QUARTA PROFÉTICA","dn":0.0,"px":14371.16,"ca":0.0,"tt":14371.16,"np":0,"pr":"","of":""},{"dt":"2026-04-01","am":"2026-04","fi":"Estoril","cu":"Quarta Profética","dn":450.0,"px":12614.29,"ca":0.0,"tt":13064.29,"np":627,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-04-01","am":"2026-04","fi":"Montes Claros","cu":"Quarta Profética MOC","dn":0.0,"px":2528.0,"ca":0.0,"tt":2528.0,"np":0,"pr":"","of":""},{"dt":"2026-04-02","am":"2026-04","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":201.0,"px":1892.0,"ca":0.0,"tt":2093.0,"np":410,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-04-02","am":"2026-04","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":1120.0,"px":4842.92,"ca":0.0,"tt":5962.92,"np":141,"pr":"Pr Marcus Paulo","of":"Pr Marcus Paulo"},{"dt":"2026-04-02","am":"2026-04","fi":"Estoril","cu":"MURO FORTE 52  QUINTA PROFÉTICA","dn":0.0,"px":10150.0,"ca":0.0,"tt":10150.0,"np":0,"pr":"","of":""},{"dt":"2026-04-05","am":"2026-04","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":467.0,"px":11413.4,"ca":0.0,"tt":11880.4,"np":492,"pr":"Pra Ana Chilongo","of":"Pr. Marco Laviola"},{"dt":"2026-04-05","am":"2026-04","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":4139.7,"px":3174.49,"ca":0.0,"tt":7318.09,"np":345,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-04-05","am":"2026-04","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":2966.0,"px":53580.84,"ca":0.0,"tt":56546.84,"np":836,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-04-06","am":"2026-04","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1802.0,"px":21945.25,"ca":0.0,"tt":23747.25,"np":512,"pr":"Pra Ana Chilongo","of":"Pr Pedro Daniel"},{"dt":"2026-04-05","am":"2026-04","fi":"Estoril","cu":"Domingo Noite Estoril","dn":444.0,"px":10957.91,"ca":0.0,"tt":11401.91,"np":556,"pr":"Pr Pedro Daniel","of":"Pr. Rafael Belo"},{"dt":"2026-04-05","am":"2026-04","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":2234.0,"ca":0.0,"tt":2234.0,"np":0,"pr":"","of":""},{"dt":"2026-04-05","am":"2026-04","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":3895.0,"px":7303.46,"ca":0.0,"tt":11198.46,"np":185,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-04-05","am":"2026-04","fi":"Estoril","cu":"MURO FORTE 52 Domingo","dn":0.0,"px":3742.66,"ca":0.0,"tt":3742.66,"np":0,"pr":"","of":""},{"dt":"2026-04-06","am":"2026-04","fi":"Pará de Minas","cu":"Homens H2O Pará de Minas","dn":125.0,"px":0.0,"ca":0.0,"tt":125.0,"np":49,"pr":"Adriano Stefano","of":"Cleber"},{"dt":"2026-04-07","am":"2026-04","fi":"Estoril","cu":"Tarde da benção","dn":541.0,"px":0.0,"ca":0.0,"tt":541.5,"np":96,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2026-04-08","am":"2026-04","fi":"Estoril","cu":"MURO FORTE 52  QUARTA PROFÉTICA","dn":0.0,"px":3984.81,"ca":0.0,"tt":3984.81,"np":0,"pr":"","of":""},{"dt":"2026-04-08","am":"2026-04","fi":"Estoril","cu":"Quarta Profética","dn":1387.0,"px":20759.49,"ca":0.0,"tt":22148.99,"np":585,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-04-08","am":"2026-04","fi":"Montes Claros","cu":"Quarta Profética MOC","dn":0.0,"px":2017.4,"ca":0.0,"tt":2017.4,"np":0,"pr":"","of":""},{"dt":"2026-04-09","am":"2026-04","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":420.0,"px":10893.49,"ca":0.0,"tt":11315.04,"np":498,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-04-09","am":"2026-04","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":1868.68,"px":3229.0,"ca":0.0,"tt":5097.68,"np":118,"pr":"Pr Douglas","of":"Pr. Rafael Ribeiro"},{"dt":"2026-04-12","am":"2026-04","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":1487.0,"px":8197.72,"ca":0.0,"tt":9684.72,"np":255,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-04-12","am":"2026-04","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":338.0,"px":4814.99,"ca":0.0,"tt":5153.99,"np":294,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-04-12","am":"2026-04","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1463.0,"px":18057.98,"ca":0.0,"tt":19522.48,"np":629,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-04-12","am":"2026-04","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":2295.0,"px":13584.56,"ca":0.0,"tt":15879.56,"np":350,"pr":"Pr. Hudson Meira","of":"Pr. Hudson Meira"},{"dt":"2026-04-12","am":"2026-04","fi":"Estoril","cu":"Domingo Noite Estoril","dn":296.0,"px":10682.94,"ca":0.0,"tt":10979.94,"np":440,"pr":"Pr. Rafael Belo","of":"Pr Amarildo"},{"dt":"2026-04-12","am":"2026-04","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":2325.74,"ca":0.0,"tt":2325.74,"np":0,"pr":"","of":""},{"dt":"2026-04-12","am":"2026-04","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":907.0,"px":1799.73,"ca":0.0,"tt":2706.73,"np":152,"pr":"Pr. Rafael Ribeiro","of":"Bruno César"},{"dt":"2026-04-13","am":"2026-04","fi":"Estoril","cu":"BN Action","dn":64.0,"px":0.0,"ca":0.0,"tt":64.0,"np":750,"pr":"Seu Elias","of":"Pr. Jefferson"},{"dt":"2026-04-14","am":"2026-04","fi":"Estoril","cu":"Tarde da benção","dn":256.0,"px":0.0,"ca":0.0,"tt":256.0,"np":74,"pr":"Pr. Roge","of":"Pra. Camila"},{"dt":"2026-04-15","am":"2026-04","fi":"Estoril","cu":"Quarta Profética","dn":1347.0,"px":9178.2,"ca":0.0,"tt":10526.2,"np":548,"pr":"Pr.Eliel","of":"Pr. Diogo Maia"},{"dt":"2026-04-15","am":"2026-04","fi":"Montes Claros","cu":"Quarta Profética MOC","dn":0.0,"px":935.0,"ca":0.0,"tt":935.0,"np":0,"pr":"","of":""},{"dt":"2026-04-16","am":"2026-04","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":265.0,"px":3286.0,"ca":0.0,"tt":3553.0,"np":483,"pr":"Pr.Eliel","of":"Pr. Diogo Maia"},{"dt":"2026-04-16","am":"2026-04","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":259.0,"px":1429.78,"ca":0.0,"tt":1688.78,"np":133,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-04-17","am":"2026-04","fi":"Estoril","cu":"Culto Wake","dn":0.0,"px":0.0,"ca":0.0,"tt":0.0,"np":69,"pr":"Raone","of":""},{"dt":"2026-04-19","am":"2026-04","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":635.0,"px":8516.38,"ca":0.0,"tt":9151.38,"np":278,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-04-19","am":"2026-04","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":47.0,"px":3169.17,"ca":0.0,"tt":3216.67,"np":218,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-04-19","am":"2026-04","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":1267.0,"px":15459.93,"ca":0.0,"tt":16726.93,"np":450,"pr":"Pr. Diogo Maia","of":"Pr. Diogo Maia"},{"dt":"2026-04-19","am":"2026-04","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1712.0,"px":9975.46,"ca":0.0,"tt":11687.46,"np":306,"pr":"Pr. Diogo Maia","of":"Pr. Hudson Meira"},{"dt":"2026-04-19","am":"2026-04","fi":"Estoril","cu":"Domingo Noite Estoril","dn":249.0,"px":8951.3,"ca":0.0,"tt":9200.3,"np":325,"pr":"Pr. Diogo Maia","of":"Pr. Diogo Maia"},{"dt":"2026-04-19","am":"2026-04","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":973.15,"ca":0.0,"tt":973.15,"np":0,"pr":"","of":""},{"dt":"2026-04-19","am":"2026-04","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":1144.0,"px":4802.87,"ca":0.0,"tt":5946.87,"np":163,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-04-21","am":"2026-04","fi":"Estoril","cu":"Tarde da benção","dn":435.0,"px":0.0,"ca":0.0,"tt":437.0,"np":245,"pr":"Pra. Camila","of":"Pr. Roge"},{"dt":"2026-04-22","am":"2026-04","fi":"Estoril","cu":"Quarta Profética","dn":870.0,"px":11666.0,"ca":0.0,"tt":12537.75,"np":489,"pr":"Pr. Rogério Barros","of":"Pr. Diogo Maia"},{"dt":"2026-04-22","am":"2026-04","fi":"Montes Claros","cu":"Quarta Profética MOC","dn":0.0,"px":1549.0,"ca":0.0,"tt":1549.0,"np":0,"pr":"","of":""},{"dt":"2026-04-23","am":"2026-04","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":359.0,"px":11113.67,"ca":0.0,"tt":11475.02,"np":395,"pr":"Pr. Rogério Barros","of":"Pr Pedro Daniel"},{"dt":"2026-04-23","am":"2026-04","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":257.0,"px":1626.67,"ca":0.0,"tt":1883.67,"np":110,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-04-24","am":"2026-04","fi":"Estoril","cu":"Vigília","dn":257.0,"px":0.0,"ca":0.0,"tt":257.0,"np":537,"pr":"","of":"Pr. Rafael Belo"},{"dt":"2026-04-24","am":"2026-04","fi":"Pará de Minas","cu":"Vigília","dn":437.0,"px":0.0,"ca":0.0,"tt":437.0,"np":92,"pr":"","of":""},{"dt":"2026-04-26","am":"2026-04","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":567.0,"px":3432.04,"ca":0.0,"tt":3999.04,"np":264,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-04-26","am":"2026-04","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":260.0,"px":5280.25,"ca":0.0,"tt":5540.35,"np":320,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-04-26","am":"2026-04","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":427.0,"px":21332.23,"ca":0.0,"tt":21762.58,"np":635,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-04-26","am":"2026-04","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":1517.0,"px":13564.69,"ca":0.0,"tt":15083.69,"np":526,"pr":"Pr Pedro Daniel","of":"Pr. Diogo Maia"},{"dt":"2026-04-26","am":"2026-04","fi":"Estoril","cu":"Domingo Noite Estoril","dn":217.0,"px":19164.76,"ca":0.0,"tt":19381.76,"np":405,"pr":"Pr Pedro Daniel","of":"Pr. Diogo Maia"},{"dt":"2026-04-26","am":"2026-04","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":2415.1,"ca":0.0,"tt":2415.1,"np":0,"pr":"","of":""},{"dt":"2026-04-26","am":"2026-04","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":359.0,"px":4433.28,"ca":0.0,"tt":4792.28,"np":116,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-04-28","am":"2026-04","fi":"Estoril","cu":"Tarde da benção","dn":245.0,"px":0.0,"ca":0.0,"tt":246.75,"np":0,"pr":"","of":""},{"dt":"2026-04-29","am":"2026-04","fi":"Estoril","cu":"Quarta Profética","dn":670.0,"px":12335.16,"ca":0.0,"tt":13005.16,"np":607,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-04-29","am":"2026-04","fi":"Montes Claros","cu":"Quarta Profética MOC","dn":0.0,"px":1410.0,"ca":0.0,"tt":1410.0,"np":0,"pr":"","of":""},{"dt":"2026-04-30","am":"2026-04","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":313.0,"px":8391.92,"ca":0.0,"tt":8706.42,"np":390,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-04-30","am":"2026-04","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":190.0,"px":969.99,"ca":0.0,"tt":1159.99,"np":106,"pr":"Pr. Rafael Ribeiro","of":"Paulo Marques"},{"dt":"2026-04-30","am":"2026-04","fi":"Montes Claros","cu":"Vigília  MOC","dn":0.0,"px":1185.0,"ca":0.0,"tt":1185.0,"np":0,"pr":"","of":""},{"dt":"2026-05-03","am":"2026-05","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":0.0,"px":8594.62,"ca":0.0,"tt":8594.62,"np":305,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-05-03","am":"2026-05","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":0.0,"px":7001.02,"ca":0.0,"tt":7001.02,"np":285,"pr":"Pr. Marco Laviola","of":"Pr. Marco Laviola"},{"dt":"2026-05-03","am":"2026-05","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":0.0,"px":37812.86,"ca":0.0,"tt":37812.86,"np":717,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-05-03","am":"2026-05","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":0.0,"px":9886.53,"ca":0.0,"tt":9886.53,"np":525,"pr":"Pr Pedro Daniel","of":"Pr. Diogo Maia"},{"dt":"2026-05-03","am":"2026-05","fi":"Estoril","cu":"Domingo Noite Estoril","dn":0.0,"px":17627.63,"ca":0.0,"tt":17627.63,"np":502,"pr":"Pr Pedro Daniel","of":"Pr Pedro Daniel"},{"dt":"2026-05-03","am":"2026-05","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":1827.89,"ca":0.0,"tt":1827.89,"np":0,"pr":"","of":""},{"dt":"2026-05-03","am":"2026-05","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":0.0,"px":2813.99,"ca":0.0,"tt":2813.99,"np":100,"pr":"Pr. Rafael Ribeiro","of":"Pr. Rafael Ribeiro"},{"dt":"2026-05-06","am":"2026-05","fi":"Estoril","cu":"Quarta Profética","dn":0.0,"px":20296.51,"ca":0.0,"tt":20296.51,"np":0,"pr":"","of":""},{"dt":"2026-05-06","am":"2026-05","fi":"Montes Claros","cu":"Quarta Profética MOC","dn":0.0,"px":1050.6,"ca":0.0,"tt":1050.6,"np":0,"pr":"","of":""},{"dt":"2026-05-07","am":"2026-05","fi":"Boulevard","cu":"Culto quinta Boulevard","dn":0.0,"px":10476.4,"ca":0.0,"tt":10476.4,"np":0,"pr":"","of":""},{"dt":"2026-05-07","am":"2026-05","fi":"Pará de Minas","cu":"Quinta Pará de Minas","dn":0.0,"px":4180.45,"ca":0.0,"tt":4180.45,"np":0,"pr":"","of":""},{"dt":"2026-05-10","am":"2026-05","fi":"Boulevard","cu":"Domingo manhã Boulevard","dn":0.0,"px":7012.35,"ca":0.0,"tt":7012.35,"np":0,"pr":"","of":""},{"dt":"2026-05-10","am":"2026-05","fi":"Boulevard","cu":"Domingo noite Boulevard","dn":0.0,"px":3345.0,"ca":0.0,"tt":3345.0,"np":0,"pr":"","of":""},{"dt":"2026-05-10","am":"2026-05","fi":"Estoril","cu":"Domingo Manhã Estoril","dn":0.0,"px":18712.86,"ca":0.0,"tt":18712.86,"np":0,"pr":"","of":""},{"dt":"2026-05-10","am":"2026-05","fi":"Estoril","cu":"Domingo Tarde Estoril","dn":0.0,"px":26875.71,"ca":0.0,"tt":26875.71,"np":0,"pr":"","of":""},{"dt":"2026-05-10","am":"2026-05","fi":"Estoril","cu":"Domingo Noite Estoril","dn":0.0,"px":9166.11,"ca":0.0,"tt":9166.11,"np":0,"pr":"","of":""},{"dt":"2026-05-10","am":"2026-05","fi":"Montes Claros","cu":"Domingo Manhã Montes Claros","dn":0.0,"px":8856.33,"ca":0.0,"tt":8856.33,"np":0,"pr":"","of":""},{"dt":"2026-05-10","am":"2026-05","fi":"Pará de Minas","cu":"Domingo Manhã Para de Minas","dn":0.0,"px":4134.0,"ca":0.0,"tt":4134.0,"np":0,"pr":"","of":""}];
+let LIVE_DATA = [...ALL_DATA];
+let FILTERED = [];
+let CHARTS = {};
+let PAGE = 'dashboard';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxJalm8OC3BGbzU-on8ENEjO9lbqFLv24pc-7ENB80LH36slm1xT-QZB-fghppf4X9pjQ/exec';
+
+const fmt  = v => 'R$ ' + Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtN = v => Number(v).toLocaleString('pt-BR');
+const mLabel = m => { const [y,mo]=m.split('-'); const ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; return ms[parseInt(mo)-1]+'/'+y.slice(2); };
+const pct = (a,b) => b>0 ? (a/b*100).toFixed(1)+'%' : '0%';
+const COLORS = ['#19332B','#2E7D5B','#86EFAC','#4ade80','#bbf7d0','#6b7280'];
+
+function gS(id){ return document.getElementById(id); }
+
+function setStatus(text, state='ok'){
+  gS('gs-status-text').textContent = text;
+  const dot = gS('gs-dot');
+  dot.className = 'live-dot' + (state==='ok' ? '' : state==='warn' ? ' warn' : ' err');
+}
+
+
+
+
+
+
+
+function destroyChart(id){
+  if(CHARTS[id]){ CHARTS[id].destroy(); delete CHARTS[id]; }
+}
+
+function mkChart(id, cfg){
+  destroyChart(id);
+  const ctx=gS(id);
+  if(!ctx) return;
+  CHARTS[id]=new Chart(ctx.getContext('2d'),cfg);
+  return CHARTS[id];
+}
+
+/* ── RENDER DASHBOARD ── */
+function renderDashboard(){
+  const d=FILTERED, el=gS('page-dashboard');
+  if(!d.length){ el.innerHTML='<div style="padding:40px;text-align:center;color:#888">Sem dados para o período selecionado</div>'; return; }
+  const total=d.reduce((a,r)=>a+r.tt,0);
+  const totalPx=Math.round(d.reduce((a,r)=>a+Math.round(r.px*100),0))/100;
+  const totalDn=Math.round(d.reduce((a,r)=>a+Math.round(r.dn*100),0))/100;
+  const totalCa=Math.round(d.reduce((a,r)=>a+Math.round(r.ca*100),0))/100;
+  const pessoas=d.reduce((a,r)=>a+r.np,0);
+  const cultos=d.length;
+  const ticket=cultos>0?total/cultos:0; // MÉDIA da coluna TOTAL
+  const allM=[...new Set(d.map(r=>r.am))].sort();
+  const lastM=allM[allM.length-1]||'';
+  const prevM=allM[allM.length-2]||'';
+  const lastT=d.filter(r=>r.am===lastM).reduce((a,r)=>a+r.tt,0);
+  const prevT=d.filter(r=>r.am===prevM).reduce((a,r)=>a+r.tt,0);
+  const delta=prevT>0?(lastT-prevT)/prevT*100:0;
+  const dCls=delta>0?'pos':delta<0?'neg':'neu';
+  const dSym=delta>0?'↑':delta<0?'↓':'';
+
+  const filiais=[...new Set(d.map(r=>r.fi))].sort();
+  const fColors=COLORS;
+
+  el.innerHTML=`
+  <div class="kpi-row">
+    <div class="kpi-card highlight">
+      <div class="kpi-label">Total Arrecadado</div>
+      <div class="kpi-value">${fmt(total)}</div>
+      <div class="kpi-sub">${fmtN(cultos)} cultos registrados</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Mês Mais Recente</div>
+      <div class="kpi-value">${fmt(lastT)}</div>
+      <div class="kpi-delta ${dCls}">${dSym} ${Math.abs(delta).toFixed(1)}% vs anterior</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Ticket Médio / Culto</div>
+      <div class="kpi-value">${fmt(ticket)}</div>
+      <div class="kpi-sub">por realização</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Pessoas no Período</div>
+      <div class="kpi-value">${fmtN(pessoas)}</div>
+      <div class="kpi-sub">presença acumulada</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Participação PIX</div>
+      <div class="kpi-value">${total>0?(totalPx/total*100).toFixed(1):0}%</div>
+      <div class="kpi-sub">do total arrecadado</div>
+    </div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">Arrecadação Mensal Consolidada
+        <span class="chart-badge" id="delta-badge">↑ 0.0% mês anterior</span>
+      </div>
+      <div class="chart-sub">Por filial — evolução histórica</div>
+      <canvas id="chart-monthly" height="200"></canvas>
+      <div class="legend" id="legend-monthly"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Distribuição por Filial</div>
+      <div class="chart-sub">Participação no total</div>
+      <canvas id="chart-pie" height="200"></canvas>
+      <div class="legend" id="legend-pie"></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="table-card">
+      <div class="chart-title" style="margin-bottom:12px">Top 10 Pastores (Pregação)</div>
+      <table><thead id="th-pastores"><tr>
+        <th>#</th>
+        <th class="sortable">Pastor</th>
+        <th class="sortable">Total</th>
+        <th class="sortable">Cultos</th>
+        <th class="sortable">Ticket Médio</th>
+      </tr></thead>
+      <tbody id="tb-pastores"></tbody></table>
+    </div>
+    <div class="table-card">
+      <div class="chart-title" style="margin-bottom:12px">Formas de Pagamento</div>
+      <div id="pay-detail"></div>
+    </div>
+  </div>`;
+
+  // Monthly chart
+  const labels=allM.map(mLabel);
+  const datasets=filiais.map((fi,i)=>({
+    label:fi,
+    data:allM.map(m=>Math.round(d.filter(r=>r.am===m&&r.fi===fi).reduce((a,r)=>a+r.tt,0))),
+    backgroundColor:fColors[i]||'#ccc',borderRadius:4,
+  }));
+  mkChart('chart-monthly',{type:'bar',data:{labels,datasets},options:{
+    responsive:true,plugins:{legend:{display:false}},
+    scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:10}}},y:{stacked:true,ticks:{callback:v=>v>=1e3?(v/1e3).toFixed(0)+'k':v,font:{size:10}},grid:{color:'#f0f0f0'}}},
+  }});
+
+  // Legend
+  const lg=gS('legend-monthly');
+  lg.innerHTML=filiais.map((f,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${fColors[i]}"></div>${f}</div>`).join('');
+
+  // Pie chart
+  const fTotals=filiais.map(fi=>d.filter(r=>r.fi===fi).reduce((a,r)=>a+r.tt,0));
+  mkChart('chart-pie',{type:'doughnut',data:{labels:filiais,datasets:[{data:fTotals,backgroundColor:fColors,borderWidth:2,borderColor:'#fff'}]},options:{
+    responsive:true,cutout:'65%',plugins:{legend:{display:false}},
+  }});
+  gS('legend-pie').innerHTML=filiais.map((f,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${fColors[i]}"></div>${f} ${pct(fTotals[i],total)}</div>`).join('');
+
+  // Pastores table
+  const pMap={};
+  d.filter(r=>r.pr).forEach(r=>{ if(!pMap[r.pr]) pMap[r.pr]={t:0,c:0}; pMap[r.pr].t+=r.tt; pMap[r.pr].c++; });
+  const sorted=Object.entries(pMap).sort((a,b)=>b[1].t-a[1].t).slice(0,10);
+  const maxT=sorted[0]?.[1].t||1;
+  gS('tb-pastores').innerHTML=sorted.map(([p,v],i)=>`
+    <tr>
+      <td class="rank" data-val="${i+1}">${i+1}</td>
+      <td>${p}</td>
+      <td data-val="${v.t}"><strong>${fmt(v.t)}</strong>
+        <div class="pct-bar"><div class="pct-fill" style="width:${(v.t/maxT*100).toFixed(0)}%"></div></div>
+      </td>
+      <td data-val="${v.c}">${v.c}</td>
+      <td data-val="${v.c?v.t/v.c:0}"><strong>${fmt(v.c?v.t/v.c:0)}</strong></td>
+    </tr>`).join('');
+  makeSortable('tb-pastores','th-pastores');
+
+  // Payments
+  const pays=[['PIX',totalPx,'#19332B'],['Dinheiro',totalDn,'#2E7D5B'],['Cartão',totalCa,'#86EFAC']];
+  gS('pay-detail').innerHTML=pays.map(([l,v,c])=>`
+    <div class="stat-row">
+      <div><div class="stat-label">${l}</div>
+      <div style="height:6px;background:#f0f0f0;border-radius:3px;margin-top:4px;width:200px">
+        <div style="height:6px;background:${c};border-radius:3px;width:${total>0?(v/total*100).toFixed(1):0}%"></div>
+      </div></div>
+      <div style="text-align:right"><strong>${fmt(v)}</strong><div style="font-size:10px;color:#888">${pct(v,total)}</div></div>
+    </div>`).join('');
+
+  // Delta badge
+  const db=gS('delta-badge');
+  if(db) db.textContent=(delta>=0?'↑':'↓')+' '+Math.abs(delta).toFixed(1)+'% mês anterior';
+}
+
+/* ── RENDER TENDENCIAS ── */
+function renderTendencias(){
+  const d=FILTERED, el=gS('page-tendencias');
+  const allM=[...new Set(d.map(r=>r.am))].sort();
+  const labels=allM.map(mLabel);
+  const filiais=[...new Set(d.map(r=>r.fi))].sort();
+  el.innerHTML=`
+  <div class="section-title">Tendências</div>
+  <div class="section-sub">Evolução histórica por período</div>
+  <div class="chart-card" style="margin-bottom:16px">
+    <div class="chart-title">Arrecadação Total por Mês</div>
+    <div class="chart-sub">Todas as filiais consolidadas</div>
+    <canvas id="chart-trend" height="120"></canvas>
+  </div>
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="chart-title">Evolução por Filial</div>
+      <canvas id="chart-filial-trend" height="200"></canvas>
+      <div class="legend" id="legend-filial-trend"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Ticket Médio Mensal</div>
+      <canvas id="chart-ticket" height="200"></canvas>
+    </div>
+  </div>`;
+
+  const totals=allM.map(m=>d.filter(r=>r.am===m).reduce((a,r)=>a+r.tt,0));
+  mkChart('chart-trend',{type:'line',data:{labels,datasets:[{data:totals,borderColor:'#19332B',backgroundColor:'rgba(25,51,43,.1)',fill:true,tension:.4,pointRadius:3}]},options:{
+    responsive:true,plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{ticks:{callback:v=>v>=1e3?(v/1e3).toFixed(0)+'k':v,font:{size:10}},grid:{color:'#f0f0f0'}}},
+  }});
+
+  const fColors=COLORS;
+  mkChart('chart-filial-trend',{type:'line',data:{labels,datasets:filiais.map((fi,i)=>{
+    const vals=allM.map(m=>d.filter(r=>r.am===m&&r.fi===fi).reduce((a,r)=>a+r.tt,0));
+    return {label:fi,data:vals,borderColor:fColors[i],tension:.4,pointRadius:2,fill:false};
+  })},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{ticks:{callback:v=>v>=1e3?(v/1e3).toFixed(0)+'k':v,font:{size:10}}}}}});
+  gS('legend-filial-trend').innerHTML=filiais.map((f,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${fColors[i]}"></div>${f}</div>`).join('');
+
+  const tickets=allM.map(m=>{const sub=d.filter(r=>r.am===m);return sub.length?sub.reduce((a,r)=>a+r.tt,0)/sub.length:0;});
+  mkChart('chart-ticket',{type:'bar',data:{labels,datasets:[{data:tickets,backgroundColor:'#86EFAC',borderRadius:4}]},options:{
+    responsive:true,plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{ticks:{callback:v=>v>=1e3?(v/1e3).toFixed(0)+'k':v,font:{size:10}}}}}});
+}
+
+/* ── RENDER FILIAIS ── */
+function renderFiliais(){
+  const d=FILTERED, el=gS('page-filiais');
+  const filiais=[...new Set(d.map(r=>r.fi))].sort();
+  const total=d.reduce((a,r)=>a+r.tt,0);
+  el.innerHTML=`
+  <div class="section-title">Análise por Filial</div>
+  <div class="section-sub">Comparativo de desempenho entre filiais</div>
+  <div class="kpi-row" style="grid-template-columns:repeat(${Math.min(filiais.length,5)},1fr)">
+  ${filiais.map((fi,i)=>{
+    const t=d.filter(r=>r.fi===fi).reduce((a,r)=>a+r.tt,0);
+    const c=d.filter(r=>r.fi===fi).length;
+    return `<div class="kpi-card"><div class="kpi-label" style="color:${COLORS[i]}">${fi}</div>
+      <div class="kpi-value">${fmt(t)}</div>
+      <div class="kpi-sub">${pct(t,total)} do total · ${c} cultos</div></div>`;
+  }).join('')}
+  </div>
+  <div class="chart-card" style="margin-bottom:16px">
+    <div class="chart-title">Arrecadação Mensal por Filial</div>
+    <canvas id="chart-filiais-bar" height="150"></canvas>
+    <div class="legend" id="legend-filiais"></div>
+  </div>
+  <div class="table-card">
+    <div class="chart-title" style="margin-bottom:12px">Resumo por Filial</div>
+    <table><thead id="th-filiais"><tr>
+        <th class="sortable">Filial</th>
+        <th class="sortable">Total</th>
+        <th class="sortable">Cultos</th>
+        <th class="sortable">Ticket Médio</th>
+        <th class="sortable">Participação</th>
+      </tr></thead>
+    <tbody id="tb-filiais">${filiais.map((fi,i)=>{
+      const t=d.filter(r=>r.fi===fi).reduce((a,r)=>a+r.tt,0);
+      const c=d.filter(r=>r.fi===fi).length;
+      const pctVal=total>0?t/total*100:0;
+      return `<tr>
+        <td><strong style="color:${COLORS[i]}">${fi}</strong></td>
+        <td data-val="${t}"><strong>${fmt(t)}</strong></td>
+        <td data-val="${c}">${c}</td>
+        <td data-val="${c?t/c:0}">${fmt(c?t/c:0)}</td>
+        <td data-val="${pctVal}"><div style="display:flex;align-items:center;gap:8px">
+          <div style="width:80px;height:6px;background:#f0f0f0;border-radius:3px">
+            <div style="width:${pct(t,total)};height:6px;background:${COLORS[i]};border-radius:3px"></div>
+          </div>${pct(t,total)}</div></td></tr>`;
+    }).join('')}</tbody></table>`;
+  makeSortable('tb-filiais','th-filiais');
+
+  const allM=[...new Set(d.map(r=>r.am))].sort();
+  mkChart('chart-filiais-bar',{type:'bar',data:{
+    labels:allM.map(mLabel),
+    datasets:filiais.map((fi,i)=>{
+      const vals=allM.map(m=>d.filter(r=>r.am===m&&r.fi===fi).reduce((a,r)=>a+r.tt,0));
+      return {label:fi,data:vals,backgroundColor:COLORS[i],borderRadius:3};
+    })
+  },options:{responsive:true,plugins:{legend:{display:false}},
+    scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:10}}},y:{stacked:true,ticks:{callback:v=>v>=1e3?(v/1e3).toFixed(0)+'k':v,font:{size:10}},grid:{color:'#f0f0f0'}}}}});
+  gS('legend-filiais').innerHTML=filiais.map((f,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${COLORS[i]}"></div>${f}</div>`).join('');
+}
+
+/* ── RENDER PASTORES ── */
+function renderPastores(){
+  const d=FILTERED, el=gS('page-pastores');
+  const pMap={};
+  d.filter(r=>r.pr).forEach(r=>{
+    if(!pMap[r.pr]) pMap[r.pr]={t:0,c:0,np:0,filiais:new Set()};
+    pMap[r.pr].t+=r.tt; pMap[r.pr].c++; pMap[r.pr].np+=r.np; pMap[r.pr].filiais.add(r.fi);
+  });
+  const sorted=Object.entries(pMap).sort((a,b)=>b[1].t-a[1].t);
+  const maxT=sorted[0]?.[1].t||1;
+  // Build ofertório map
+  const oMap={};
+  d.filter(r=>r.of).forEach(r=>{
+    if(!oMap[r.of]) oMap[r.of]={t:0,c:0,filiais:new Set()};
+    oMap[r.of].t+=r.tt; oMap[r.of].c++; oMap[r.of].filiais.add(r.fi);
+  });
+  const sortedOf=Object.entries(oMap).sort((a,b)=>b[1].t-a[1].t);
+  const maxOf=sortedOf[0]?.[1].t||1;
+
+  el.innerHTML=`
+  <div class="section-title">Análise por Pastor</div>
+  <div class="section-sub">Pregação e Oferta — impacto separado nas métricas</div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab(this,'tab-pregacao')">🎤 Pastor da Pregação</button>
+    <button class="tab-btn" onclick="switchTab(this,'tab-oferta')">🙏 Pastor da Oferta</button>
+  </div>
+
+  <div id="tab-pregacao" class="tab-panel active">
+    <div class="table-card">
+      <div class="chart-title" style="margin-bottom:4px">Pastores da Pregação</div>
+      <div style="font-size:11px;color:var(--n4);margin-bottom:12px">Impacto no público e arrecadação por quem pregou</div>
+      <table><thead id="th-preg"><tr>
+        <th>#</th>
+        <th class="sortable">Pastor</th>
+        <th class="sortable">Total Arrecadado</th>
+        <th class="sortable">Cultos</th>
+        <th class="sortable">Ticket Médio</th>
+        <th class="sortable">Pessoas</th>
+        <th>Filiais</th>
+      </tr></thead>
+      <tbody id="tb-preg">${sorted.map(([p,v],i)=>`
+        <tr>
+          <td class="rank" data-val="${i+1}">${i+1}</td>
+          <td><strong>${p}</strong></td>
+          <td data-val="${v.t}"><strong>${fmt(v.t)}</strong>
+            <div class="pct-bar"><div class="pct-fill" style="width:${(v.t/maxT*100).toFixed(0)}%;background:${COLORS[i%COLORS.length]}"></div></div>
+          </td>
+          <td data-val="${v.c}">${v.c}</td>
+          <td data-val="${v.c?v.t/v.c:0}">${fmt(v.c?v.t/v.c:0)}</td>
+          <td data-val="${v.np}">${fmtN(v.np)}</td>
+          <td style="font-size:11px;color:#666">${[...v.filiais].join(', ')}</td>
+        </tr>`).join('')}
+      </tbody></table>
+    </div>
+  </div>
+
+  <div id="tab-oferta" class="tab-panel">
+    <div class="table-card">
+      <div class="chart-title" style="margin-bottom:4px">Pastores da Oferta</div>
+      <div style="font-size:11px;color:var(--n4);margin-bottom:12px">Impacto direto na arrecadação por quem conduziu a oferta</div>
+      <table><thead id="th-of"><tr>
+        <th>#</th>
+        <th class="sortable">Pastor</th>
+        <th class="sortable">Total Arrecadado</th>
+        <th class="sortable">Cultos</th>
+        <th class="sortable">Ticket Médio</th>
+        <th>Filiais</th>
+      </tr></thead>
+      <tbody id="tb-of">${sortedOf.map(([p,v],i)=>`
+        <tr>
+          <td class="rank" data-val="${i+1}">${i+1}</td>
+          <td><strong>${p}</strong></td>
+          <td data-val="${v.t}"><strong>${fmt(v.t)}</strong>
+            <div class="pct-bar"><div class="pct-fill" style="width:${(v.t/maxOf*100).toFixed(0)}%;background:${COLORS[i%COLORS.length]}"></div></div>
+          </td>
+          <td data-val="${v.c}">${v.c}</td>
+          <td data-val="${v.c?v.t/v.c:0}">${fmt(v.c?v.t/v.c:0)}</td>
+          <td style="font-size:11px;color:#666">${[...v.filiais].join(', ')}</td>
+        </tr>`).join('')}
+      </tbody></table>
+    </div>
+  </div>`;
+
+  makeSortable('tb-preg','th-preg');
+  makeSortable('tb-of','th-of');
+}
+
+/* ── RENDER CULTOS ── */
+function renderCultos(){
+  const d=FILTERED, el=gS('page-cultos');
+  const cMap={};
+  d.forEach(r=>{
+    if(!cMap[r.cu]) cMap[r.cu]={t:0,c:0};
+    cMap[r.cu].t+=r.tt; cMap[r.cu].c++;
+  });
+  const sorted=Object.entries(cMap).sort((a,b)=>b[1].t-a[1].t);
+  const maxT=sorted[0]?.[1].t||1;
+  el.innerHTML=`
+  <div class="section-title">Análise por Tipo de Culto</div>
+  <div class="section-sub">Arrecadação por modalidade de culto</div>
+  <div class="table-card">
+    <table><thead id="th-cultos"><tr>
+        <th>#</th>
+        <th class="sortable">Culto</th>
+        <th class="sortable">Total</th>
+        <th class="sortable">Realizações</th>
+        <th class="sortable">Ticket Médio</th>
+      </tr></thead>
+    <tbody id="tb-cultos">${sorted.map(([c,v],i)=>`
+      <tr>
+        <td class="rank" data-val="${i+1}">${i+1}</td>
+        <td>${c}</td>
+        <td data-val="${v.t}"><strong>${fmt(v.t)}</strong>
+          <div class="pct-bar"><div class="pct-fill" style="width:${(v.t/maxT*100).toFixed(0)}%"></div></div>
+        </td>
+        <td data-val="${v.c}">${v.c}</td>
+        <td data-val="${v.c?v.t/v.c:0}">${fmt(v.c?v.t/v.c:0)}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  makeSortable('tb-cultos','th-cultos');
+}
+
+/* ── RENDER PAGAMENTOS ── */
+function renderPagamentos(){
+  const d=FILTERED, el=gS('page-pagamentos');
+  const total=d.reduce((a,r)=>a+r.tt,0);
+  const px=d.reduce((a,r)=>a+r.px,0);
+  const dn=d.reduce((a,r)=>a+r.dn,0);
+  const ca=d.reduce((a,r)=>a+r.ca,0);
+  el.innerHTML=`
+  <div class="section-title">Formas de Pagamento</div>
+  <div class="section-sub">Distribuição por modalidade</div>
+  <div class="grid-3">
+    <div class="kpi-card highlight"><div class="kpi-label">PIX</div><div class="kpi-value">${fmt(px)}</div><div class="kpi-sub">${pct(px,total)} do total</div></div>
+    <div class="kpi-card"><div class="kpi-label">Dinheiro</div><div class="kpi-value">${fmt(dn)}</div><div class="kpi-sub">${pct(dn,total)} do total</div></div>
+    <div class="kpi-card"><div class="kpi-label">Cartão</div><div class="kpi-value">${fmt(ca)}</div><div class="kpi-sub">${pct(ca,total)} do total</div></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Evolução das Formas de Pagamento</div>
+    <canvas id="chart-pay" height="130"></canvas>
+  </div>`;
+
+  const allM=[...new Set(d.map(r=>r.am))].sort();
+  mkChart('chart-pay',{type:'bar',data:{
+    labels:allM.map(mLabel),
+    datasets:[
+      {label:'PIX',data:allM.map(m=>d.filter(r=>r.am===m).reduce((a,r)=>a+r.px,0)),backgroundColor:'#19332B',borderRadius:3},
+      {label:'Dinheiro',data:allM.map(m=>d.filter(r=>r.am===m).reduce((a,r)=>a+r.dn,0)),backgroundColor:'#2E7D5B',borderRadius:3},
+      {label:'Cartão',data:allM.map(m=>d.filter(r=>r.am===m).reduce((a,r)=>a+r.ca,0)),backgroundColor:'#86EFAC',borderRadius:3},
+    ]
+  },options:{responsive:true,plugins:{legend:{position:'top',labels:{font:{size:11}}}},
+    scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:10}}},y:{stacked:true,ticks:{callback:v=>v>=1e3?(v/1e3).toFixed(0)+'k':v,font:{size:10}},grid:{color:'#f0f0f0'}}}}});
+}
+
+/* ── RENDER RANKINGS ── */
+function renderRankings(){
+  const d=FILTERED, el=gS('page-rankings');
+  const allM=[...new Set(d.map(r=>r.am))].sort();
+  const mTotals=allM.map(m=>d.filter(r=>r.am===m).reduce((a,r)=>a+r.tt,0));
+  const maxIdx=mTotals.indexOf(Math.max(...mTotals));
+  const minIdx=mTotals.indexOf(Math.min(...mTotals));
+  const avg=mTotals.length?mTotals.reduce((a,v)=>a+v,0)/mTotals.length:0;
+  const pMap={};
+  d.filter(r=>r.pr).forEach(r=>{ if(!pMap[r.pr]) pMap[r.pr]=0; pMap[r.pr]+=r.tt; });
+  const top3=Object.entries(pMap).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  el.innerHTML=`
+  <div class="section-title">Rankings</div>
+  <div class="section-sub">Destaques do período selecionado</div>
+  <div class="grid-3">
+    <div class="kpi-card highlight"><div class="kpi-label">Melhor Mês</div><div class="kpi-value">${fmt(mTotals[maxIdx]||0)}</div><div class="kpi-sub">${mLabel(allM[maxIdx]||'')}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Mês Mais Fraco</div><div class="kpi-value">${fmt(mTotals[minIdx]||0)}</div><div class="kpi-sub">${mLabel(allM[minIdx]||'')}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Média Mensal</div><div class="kpi-value">${fmt(avg)}</div><div class="kpi-sub">${allM.length} meses</div></div>
+  </div>
+  <div class="table-card">
+    <div class="chart-title" style="margin-bottom:12px">Top 3 Pastores</div>
+    ${top3.map(([p,v],i)=>`
+    <div class="stat-row">
+      <div><div style="font-weight:700">${i+1}. ${p}</div></div>
+      <strong>${fmt(v)}</strong>
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderPage(){
+  renderDashboard();
+  if(PAGE==='tendencias') renderTendencias();
+  else if(PAGE==='filiais') renderFiliais();
+  else if(PAGE==='pastores') renderPastores();
+  else if(PAGE==='cultos') renderCultos();
+  else if(PAGE==='pagamentos') renderPagamentos();
+  else if(PAGE==='rankings') renderRankings();
+}
+
+function nav(page, btn){
+  PAGE=page;
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  gS('page-'+page).classList.add('active');
+  const titles={'dashboard':'Dashboard Geral','tendencias':'Tendências','filiais':'Filiais','pastores':'Pastores','cultos':'Cultos','pagamentos':'Pagamentos','rankings':'Rankings'};
+  gS('page-title').textContent=titles[page]||page;
+  renderPage();
+}
+
+/* ── APPS SCRIPT PARSER ── */
+function parseAppsScriptJSON(raw){
+  if(!Array.isArray(raw)||raw.length<2) return [];
+  const records=[];
+  for(let i=1;i<raw.length;i++){
+    const cols=raw[i];
+    if(!cols[3]) continue;
+    let dt='',am='';
+    const rawDate=String(cols[1]||'').trim();
+    if(/^\d{2}\/\d{2}\/\d{4}$/.test(rawDate)){
+      // DD/MM/YYYY (Brazilian format)
+      const [dd,mm,yyyy]=rawDate.split('/');
+      dt=`${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`; am=`${yyyy}-${mm.padStart(2,'0')}`;
+    } else if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(rawDate)){
+      // D/M/YYYY
+      const p=rawDate.split('/');
+      const dd=p[0].padStart(2,'0'),mm=p[1].padStart(2,'0'),yyyy=p[2];
+      dt=`${yyyy}-${mm}-${dd}`; am=`${yyyy}-${mm}`;
+    } else if(/^\d{4}-\d{2}-\d{2}/.test(rawDate)){
+      dt=rawDate.slice(0,10); am=rawDate.slice(0,7);
+    } else if(rawDate){
+      // Try JS Date as last resort
+      const d=new Date(rawDate);
+      if(!isNaN(d)){ dt=d.toISOString().slice(0,10); am=dt.slice(0,7); }
+    }
+    if(!dt||!am) continue;
+    const toN=v=>{
+      if(typeof v==='number') return v;
+      let s=String(v||'').replace(/R\$\s*/g,'').trim();
+      if(s.includes(',')&&s.includes('.')) s=s.replace(/\./g,'').replace(',','.');
+      else if(s.includes(',')) s=s.replace(',','.');
+      s=s.replace(/[^0-9.-]/g,'');
+      return parseFloat(s)||0;
+    };
+    records.push({
+      dt,am,fi:String(cols[3]||'').trim(),cu:String(cols[4]||'').trim(),
+      dn:toN(cols[5]),px:toN(cols[6]),ca:toN(cols[7]),
+      tt:toN(cols[9]),np:(()=>{const s=String(cols[10]||'0').replace(/\./g,'').replace(',','').replace(/[^0-9]/g,'');return parseInt(s)||0;})(),
+      pr:String(cols[12]||'').trim(),of:String(cols[13]||'').trim(),
+    });
+  }
+  return records;
+}
+
+function applyNewData(records, source){ applyData(records, source); }
+
+/* ── SYNC ── */
+
+
+/* ═══════════════════════════════════════════════════════
+   FILTER STATE
+   ═══════════════════════════════════════════════════════ */
+let _selectedFiliais = new Set(); // empty = all
+let _drStart = '';   // YYYY-MM-DD
+let _drEnd   = '';   // YYYY-MM-DD
+let _drMode  = '';   // '' | 'cm' | '3' | '6' | '12' | 'custom'
+
+/* ── MULTI-SELECT FILIAL ── */
+function toggleMS(id){
+  const drop = document.getElementById('ms-'+id+'-drop');
+  const isOpen = drop.classList.contains('open');
+  // Close all dropdowns
+  document.querySelectorAll('.multiselect-dropdown.open,.daterange-picker.open')
+    .forEach(d=>d.classList.remove('open'));
+  if(!isOpen){ drop.classList.add('open'); setupOutsideClose('ms-'+id+'-drop','ms-'+id+'-wrap'); }
+}
+
+function filterMS(id, q){
+  const opts = document.querySelectorAll('#ms-'+id+'-opts .ms-option:not(.select-all)');
+  opts.forEach(o=>{
+    const txt = o.querySelector('label').textContent.toLowerCase();
+    o.style.display = txt.includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function buildMSFilial(){
+  const filiais = [...new Set(LIVE_DATA.map(r=>r.fi).filter(Boolean))].sort();
+  const wrap = document.getElementById('ms-filial-opts');
+  if(!wrap) return;
+  wrap.innerHTML = `
+    <div class="ms-option select-all" onclick="toggleAllFiliais()">
+      <input type="checkbox" id="ms-all-cb" ${_selectedFiliais.size===0?'checked':''}>
+      <label for="ms-all-cb" style="cursor:pointer">Todas as filiais</label>
+    </div>
+    ${filiais.map((f,i)=>`
+    <div class="ms-option">
+      <input type="checkbox" id="ms-fi-${i}" value="${f}" 
+        ${_selectedFiliais.has(f)?'checked':''}
+        onchange="toggleFilial('${f}',this.checked)">
+      <label for="ms-fi-${i}" style="cursor:pointer">${f}</label>
+    </div>`).join('')}`;
+  updateFilialBtn();
+}
+
+function toggleFilial(fi, checked){
+  if(checked) _selectedFiliais.add(fi);
+  else _selectedFiliais.delete(fi);
+  const allCb = document.getElementById('ms-all-cb');
+  if(allCb) allCb.checked = _selectedFiliais.size===0;
+  updateFilialBtn();
+  applyFilters();
+}
+
+function toggleAllFiliais(){
+  _selectedFiliais.clear();
+  buildMSFilial();
+  applyFilters();
+}
+
+function updateFilialBtn(){
+  const btn = document.getElementById('ms-filial-btn');
+  const lbl = document.getElementById('ms-filial-label');
+  const tags = document.getElementById('ms-filial-tags');
+  if(!btn||!lbl) return;
+  if(_selectedFiliais.size===0){
+    lbl.textContent='Todas as Filiais';
+    btn.classList.remove('active-filter');
+    if(tags) tags.innerHTML='';
+  } else {
+    lbl.textContent=_selectedFiliais.size===1?[..._selectedFiliais][0]:_selectedFiliais.size+' filiais';
+    btn.classList.add('active-filter');
+    if(tags) tags.innerHTML=[..._selectedFiliais].map(f=>`
+      <div class="ms-tag">${f}
+        <button onclick="toggleFilial('${f}',false);buildMSFilial()">×</button>
+      </div>`).join('');
+  }
+}
+
+/* ── DATE RANGE ── */
+function toggleDR(){
+  const picker = document.getElementById('dr-picker');
+  const isOpen = picker.classList.contains('open');
+  document.querySelectorAll('.multiselect-dropdown.open,.daterange-picker.open')
+    .forEach(d=>d.classList.remove('open'));
+  if(!isOpen){ picker.classList.add('open'); setupOutsideClose('dr-picker','dr-wrap'); }
+}
+
+function selectQP(el){
+  document.querySelectorAll('.qp-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const qp = el.dataset.qp;
+  _drMode = qp;
+  const now = new Date();
+  if(qp===''){
+    _drStart=''; _drEnd='';
+    document.getElementById('dr-start').value='';
+    document.getElementById('dr-end').value='';
+  } else if(qp==='cm'){
+    const y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0');
+    _drStart=y+'-'+m+'-01';
+    _drEnd=now.toISOString().slice(0,10);
+    document.getElementById('dr-start').value=_drStart;
+    document.getElementById('dr-end').value=_drEnd;
+  } else {
+    const past=new Date(); past.setMonth(past.getMonth()-parseInt(qp));
+    _drStart=past.toISOString().slice(0,10);
+    _drEnd=now.toISOString().slice(0,10);
+    document.getElementById('dr-start').value=_drStart;
+    document.getElementById('dr-end').value=_drEnd;
+  }
+  updateDRBtn();
+  applyFilters();
+}
+
+function applyDR(){
+  const s=document.getElementById('dr-start').value;
+  const e=document.getElementById('dr-end').value;
+  _drStart=s; _drEnd=e;
+  _drMode = (s||e) ? 'custom' : '';
+  // Clear quick period active if custom
+  if(_drMode==='custom'){
+    document.querySelectorAll('.qp-btn').forEach(b=>b.classList.remove('active'));
+  }
+  updateDRBtn();
+  document.getElementById('dr-picker').classList.remove('open');
+  applyFilters();
+}
+
+function clearDR(){
+  _drStart=''; _drEnd=''; _drMode='';
+  document.getElementById('dr-start').value='';
+  document.getElementById('dr-end').value='';
+  document.querySelectorAll('.qp-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.qp-btn[data-qp=""]').classList.add('active');
+  updateDRBtn();
+  document.getElementById('dr-picker').classList.remove('open');
+  applyFilters();
+}
+
+function updateDRBtn(){
+  const btn = document.getElementById('dr-btn');
+  const lbl = document.getElementById('dr-label');
+  if(!btn||!lbl) return;
+  if(!_drStart && !_drEnd){
+    lbl.textContent='Todo o período';
+    btn.classList.remove('active-filter');
+  } else if(_drMode==='cm'){
+    lbl.textContent='Este mês';
+    btn.classList.add('active-filter');
+  } else {
+    const fmt=d=>d?d.split('-').reverse().join('/'):'';
+    lbl.textContent=(_drStart?fmt(_drStart):'...') + ' – ' + (_drEnd?fmt(_drEnd):'...');
+    btn.classList.add('active-filter');
+  }
+}
+
+function setupOutsideClose(dropId, wrapId){
+  setTimeout(()=>{
+    function handler(e){
+      const wrap=document.getElementById(wrapId);
+      if(wrap&&!wrap.contains(e.target)){
+        document.getElementById(dropId).classList.remove('open');
+        document.removeEventListener('click',handler);
+      }
+    }
+    document.addEventListener('click',handler);
+  },10);
+}
+
+/* ── BUILD FILTERS ── */
+function buildFilters(){
+  buildMSFilial();
+  const mo=[...new Set(LIVE_DATA.map(r=>r.am))].sort();
+  const pa=[...new Set(LIVE_DATA.map(r=>r.pr).filter(Boolean))].sort();
+  const of=[...new Set(LIVE_DATA.map(r=>r.of).filter(Boolean))].sort();
+  const cu=[...new Set(LIVE_DATA.map(r=>r.cu).filter(Boolean))].sort();
+  const sel=(id,arr,lbl)=>{
+    const el=document.getElementById(id); if(!el) return;
+    const v=el.value;
+    el.innerHTML='<option value="">'+lbl+'</option>';
+    arr.forEach(x=>el.innerHTML+=`<option ${x===v?'selected':''}>${x}</option>`);
+  };
+  sel('f-month',mo,'Todos');
+  sel('f-pastor',pa,'Todos');
+  sel('f-ofertorio',of,'Todos');
+  sel('f-culto',cu,'Todos');
+}
+
+/* ── APPLY FILTERS ── */
+function applyFilters(){
+  const fM  = document.getElementById('f-month')?.value||'';
+  const fPa = document.getElementById('f-pastor')?.value||'';
+  const fOf = document.getElementById('f-ofertorio')?.value||'';
+  const fC  = document.getElementById('f-culto')?.value||'';
+
+  let d=[...LIVE_DATA];
+
+  // Multi-select filial
+  if(_selectedFiliais.size>0) d=d.filter(r=>_selectedFiliais.has(r.fi));
+
+  // Date range
+  if(_drStart) d=d.filter(r=>r.dt>=_drStart);
+  if(_drEnd)   d=d.filter(r=>r.dt<=_drEnd);
+
+  if(fM)  d=d.filter(r=>r.am===fM);
+  if(fPa) d=d.filter(r=>r.pr===fPa);
+  if(fOf) d=d.filter(r=>r.of===fOf);
+  if(fC)  d=d.filter(r=>r.cu===fC);
+
+  FILTERED=d;
+  const total=Math.round(d.reduce((a,r)=>a+Math.round(r.tt*100),0))/100;
+  const meta=document.getElementById('filter-meta');
+  if(meta) meta.innerHTML=`<i class="ti ti-database" style="margin-right:4px"></i>${fmtN(d.length)} registros &nbsp;·&nbsp; <strong>${fmt(total)}</strong>`;
+  renderPage();
+}
+
+/* ── CLEAR FILTERS ── */
+function clearFilters(){
+  _selectedFiliais.clear();
+  _drStart=''; _drEnd=''; _drMode='';
+  ['f-month','f-pastor','f-ofertorio','f-culto'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  // Reset UI
+  buildMSFilial();
+  clearDR();
+}
+
+/* ── SORTABLE TABLES ── */
+let _sortState = {}; // {tableId: {col, dir}}
+
+
+function switchTab(btn, panelId){
+  const parent = btn.closest('.page') || document;
+  parent.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  parent.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  const panel = document.getElementById(panelId);
+  if(panel) panel.classList.add('active');
+}
+
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxJalm8OC3BGbzU-on8ENEjO9lbqFLv24pc-7ENB80LH36slm1xT-QZB-fghppf4X9pjQ/exec';
+let _connected = false;
+
+function parseBRL(v){
+  if(typeof v==='number') return Math.round(v*100)/100;
+  // Replica: SUBSTITUIR(SUBSTITUIR(v;"R$";"");" ";"") do Google Sheets
+  let s=String(v||'')
+    .replace(/R\$/g,'')
+    .replace(/[\s\u00a0\u202f\u2009]/g,'')
+    .trim();
+  if(!s||s==='-') return 0;
+  if(s.includes(',')&&s.includes('.')){
+    s=s.replace(/\./g,'').replace(',','.');
+  } else if(s.includes(',')){
+    s=s.replace(',','.');
+  } else if(s.includes('.')){
+    const p=s.split('.');
+    if(p.length===2&&p[1].length===3) s=s.replace('.','');
+  }
+  const n=parseFloat(s.replace(/[^0-9.-]/g,''));
+  return isNaN(n)?0:Math.round(n*100)/100;
+}
+
+
+function parseScriptJSON(raw){
+  // Support both old format (array) and new format {rows, total_j, count}
+  let rows = raw;
+  let precomputedTotal = null;
+  if(raw && !Array.isArray(raw) && raw.rows){
+    rows = raw.rows;
+    precomputedTotal = raw.total_j; // Soma calculada pelo Sheets — 100% precisa
+  }
+  if(!Array.isArray(rows)||rows.length<2) return [];
+  const records=[];
+  // DEBUG: log first 3 rows raw values
+  if(!window._debugDone){
+    window._debugDone=true;
+    let debugSum=0;
+    for(let di=1;di<rows.length;di++){
+      const dv=rows[di][9];
+      if(typeof dv==='number') debugSum+=dv;
+      else debugSum+=parseBRL(dv);
+    }
+    console.log('[IBNC DEBUG] Total bruto col J:', debugSum.toFixed(2));
+    console.log('[IBNC DEBUG] Exemplo col J row 1:', rows[1][9], typeof rows[1][9]);
+    console.log('[IBNC DEBUG] Exemplo col J row 2:', rows[2][9], typeof rows[2][9]);
+    console.log('[IBNC DEBUG] Total rows:', rows.length-1);
+  }
+  for(let i=1;i<rows.length;i++){
+    const c=rows[i];
+    // Pula apenas linhas completamente vazias (sem data e sem valor)
+    if(!c[1] && !c[9]) continue;
+    let dt='',am='';
+    const rd=String(c[1]||'').trim();
+    if(/^\d{2}\/\d{2}\/\d{4}$/.test(rd)){ const[dd,mm,yyyy]=rd.split('/'); dt=`${yyyy}-${mm}-${dd}`; am=`${yyyy}-${mm}`; }
+    else if(/^\d{4}-\d{2}-\d{2}/.test(rd)){ dt=rd.slice(0,10); am=rd.slice(0,7); }
+    else{ const d=new Date(rd); if(!isNaN(d)){ dt=d.toISOString().slice(0,10); am=dt.slice(0,7); } }
+    if(!dt) continue;
+    // Converte qualquer valor para número — se já for número usa direto
+    // Math.round(*100)/100 evita erros de ponto flutuante
+    const toNum = v => {
+      if(typeof v==='number') return Math.round(v*100)/100;
+      return parseBRL(v);
+    };
+    const tt = toNum(c[9]);
+    const dn = toNum(c[5]);
+    const px = toNum(c[6]);
+    const ca = toNum(c[7]);
+    const npRaw = c[10];
+    const np = typeof npRaw==='number' ? Math.round(npRaw) : (()=>{const n=String(npRaw||'0').replace(/\./g,'').replace(/[^0-9]/g,'');return parseInt(n)||0;})();
+    records.push({dt,am,fi:String(c[3]||'').trim(),cu:String(c[4]||'').trim(),dn,px,ca,tt,np,pr:String(c[12]||'').trim(),of:String(c[13]||'').trim()});
+  }
+  // Attach precomputed total so renderDashboard can use it
+  if(precomputedTotal !== null) records._totalJ = precomputedTotal;
+  return records;
+}
+
+
+function applyData(records,source){
+  LIVE_DATA=[...records];
+  buildFilters();
+  // Reset all filter state
+  _selectedFiliais.clear();
+  _drStart=''; _drEnd=''; _drMode='';
+  ['f-month','f-pastor','f-ofertorio','f-culto'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  updateFilialBtn();
+  updateDRBtn();
+  // Update topbar
+  const allM=[...new Set(LIVE_DATA.map(r=>r.am))].sort();
+  const dr=document.getElementById('date-range');
+  if(dr){ dr.textContent = allM.length > 0 ? mLabel(allM[0]) + ' – ' + mLabel(allM[allM.length-1]) : '—'; }
+  document.getElementById('sync-label').textContent=`${fmtN(records.length)} registros — ${source}`;
+  setStatus(`${source} — ${fmtN(records.length)} registros`,'ok');
+  const btn=document.getElementById('btn-disc'); if(btn) btn.style.display='block';
+  applyFilters();
+}
+
+
+async function doSync(url, silent){
+  try{
+    const resp=await fetch(url,{signal:AbortSignal.timeout(12000)});
+    if(!resp.ok) throw new Error('HTTP '+resp.status+' — verifique o Apps Script');
+    const text=await resp.text();
+    // Detect error responses
+    if(text.startsWith('<')||text.includes('allowlist')||text.includes('signin')){
+      throw new Error('Acesso bloqueado: '+text.slice(0,80));
+    }
+    const raw=JSON.parse(text);
+    const records=parseScriptJSON(raw);
+    if(!records.length) throw new Error('Sem registros válidos ('+raw.length+' linhas brutas)');
+    applyData(records,'Apps Script');
+    if(!silent){ logM('✓ '+records.length+' registros sincronizados!','ok'); setTimeout(()=>closeModal(),1500); }
+    return true;
+  } catch(e){
+    console.error('[IBNC sync erro]', e.message);
+    if(!silent) logM('Erro: '+e.message,'err');
+    return false;
+  }
+}
+
+
+async function autoSync(){
+  const ok=await doSync(SCRIPT_URL,true);
+  if(!ok){
+    setStatus('Falha — dados locais','warn');
+    document.getElementById('sync-label').textContent=fmtN(ALL_DATA.length)+' registros — dados locais';
+  }
+  setInterval(()=>doSync(SCRIPT_URL,true),5*60*1000);
+}
+
+
+async function manualSync(){
+  const url=document.getElementById('inp-script-url').value.trim()||SCRIPT_URL;
+  const btn=document.getElementById('btn-sync');
+  const log=document.getElementById('modal-log');
+  if(log){ log.innerHTML=''; log.style.display='block'; }
+  if(btn){ btn.disabled=true; btn.textContent='Sincronizando...'; }
+  logM('Conectando ao Google Sheets...');
+  await doSync(url,false);
+  if(btn){ btn.disabled=false; btn.innerHTML='⟳ Sincronizar'; }
+}
+
+
+function logM(msg, type){
+  const log = document.getElementById('modal-log');
+  if(!log) return;
+  log.style.display = 'block';
+  const ts = new Date().toLocaleTimeString('pt-BR');
+  log.innerHTML += `<div class="log-line"><span class="ts">[${ts}]</span> <span class="${type||'ok'}">${msg}</span></div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+function addLog(msg, type){
+  console.log('[IBNC]', msg);
+}
+
+function closeModal(){
+  document.getElementById('modal-ds').classList.remove('open');
+}
+
+function setStatus(text, state){
+  const txt = document.getElementById('gs-status-text');
+  const dot = document.getElementById('gs-dot');
+  if(txt) txt.textContent = text;
+  if(dot) dot.className = 'live-dot' + (state==='ok' ? '' : state==='warn' ? ' warn' : ' err');
+}
+
+
+/* ── SORTABLE TABLES ── */
+
+function makeSortable(tbodyId, headerId){
+  const thead=document.getElementById(headerId);
+  if(!thead) return;
+  thead.querySelectorAll('th.sortable').forEach((th,colIdx)=>{
+    th.addEventListener('click',()=>{
+      const state=_sortState[tbodyId]||{col:-1,dir:'asc'};
+      const newDir=(state.col===colIdx&&state.dir==='desc')?'asc':'desc';
+      _sortState[tbodyId]={col:colIdx,dir:newDir};
+      thead.querySelectorAll('th.sortable').forEach(h=>h.classList.remove('asc','desc'));
+      th.classList.add(newDir);
+      const tbody=document.getElementById(tbodyId);
+      if(!tbody) return;
+      const rows=[...tbody.querySelectorAll('tr')];
+      rows.sort((a,b)=>{
+        const aC=a.querySelectorAll('td')[colIdx];
+        const bC=b.querySelectorAll('td')[colIdx];
+        if(!aC||!bC) return 0;
+        const aR=aC.dataset.val!==undefined?aC.dataset.val:aC.textContent.replace(/[R$\s.]/g,'').replace(',','.').trim();
+        const bR=bC.dataset.val!==undefined?bC.dataset.val:bC.textContent.replace(/[R$\s.]/g,'').replace(',','.').trim();
+        const aN=parseFloat(aR),bN=parseFloat(bR);
+        const aV=isNaN(aN)?aR:aN, bV=isNaN(bN)?bR:bN;
+        const cmp=aV<bV?-1:aV>bV?1:0;
+        return newDir==='desc'?-cmp:cmp;
+      });
+      rows.forEach(r=>tbody.appendChild(r));
+    });
+  });
+}
+
+async function syncFromScript(url, silent){
+  const ok = await doSync(url || SCRIPT_URL, silent);
+  if(!ok && !silent){
+    setStatus('Falha — dados locais','warn');
+    document.getElementById('sync-label').textContent = fmtN(ALL_DATA.length)+' registros — dados locais';
+  }
+  if(ok && !window._gsInterval){
+    window._gsInterval = setInterval(()=>doSync(SCRIPT_URL, true), 5*60*1000);
+  }
+  return ok;
+}
+document.addEventListener('DOMContentLoaded', function(){
+  LIVE_DATA = [...ALL_DATA];
+  buildFilters();
+  applyFilters();
+  const allM=[...new Set(LIVE_DATA.map(r=>r.am))].sort();
+  const drEl=document.getElementById('date-range'); if(drEl && allM.length){ drEl.textContent = mLabel(allM[0]) + ' – ' + mLabel(allM[allM.length-1]); }
+  document.getElementById('sync-label').textContent = fmtN(ALL_DATA.length)+' registros — dados locais';
+  setStatus('Conectando...','warn');
+  const scriptUrl = document.getElementById('inp-script-url') 
+    ? document.getElementById('inp-script-url').value 
+    : SCRIPT_URL;
+  syncFromScript(scriptUrl, true);
+});
+</script>
+
+<!-- BOTTOM NAV (mobile only) -->
+<div id="bottom-nav">
+  <button class="bn-item active" onclick="navMobile('dashboard',this)"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
+  <button class="bn-item" onclick="navMobile('tendencias',this)"><i class="ti ti-trending-up"></i>Tendências</button>
+  <button class="bn-item" onclick="navMobile('filiais',this)"><i class="ti ti-building-church"></i>Filiais</button>
+  <button class="bn-item" onclick="navMobile('pastores',this)"><i class="ti ti-user-circle"></i>Pastores</button>
+  <button class="bn-item" onclick="navMobile('rankings',this)"><i class="ti ti-trophy"></i>Rankings</button>
+</div>
+</body>
+</html>
